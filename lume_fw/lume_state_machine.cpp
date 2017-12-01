@@ -15,6 +15,7 @@
 * for more details.
 *****************************************************************************/
 /*${.::lume_state_machine.cpp} .............................................*/
+
 #include <EventHandlers.h>
 #include "qpc.h"
 #include "lume_state_machine.h"
@@ -55,6 +56,7 @@ static QState Lume_state_machine_year(Lume_state_machine * const me, QEvt const 
 static QState Lume_state_machine_brightness_low(Lume_state_machine * const me, QEvt const * const e);
 static QState Lume_state_machine_brightness_high(Lume_state_machine * const me, QEvt const * const e);
 static QState Lume_state_machine_threshold(Lume_state_machine * const me, QEvt const * const e);
+
 
 #ifdef DESKTOP
 static QState Lume_state_machine_final(Lume_state_machine * const me, QEvt const * const e);
@@ -116,6 +118,7 @@ static QState Lume_state_machine_Lume(Lume_state_machine * const me, QEvt const 
             CurrentLum = ((LumeQEvt const*)e)->Value/2;
                 if(CurrentLum > 99) CurrentLum = 99;
                 Lcd.Printf(14, 2, "%02u", CurrentLum);
+
             status_ = Q_HANDLED();
             break;
         }
@@ -143,6 +146,7 @@ static QState Lume_state_machine_idle(Lume_state_machine * const me, QEvt const 
             break;
         }
         /* ${SMs::Lume_state_machi~::SM::global::Lume::idle::TIC_SEC} */
+
         case TICK_SEC_SIG: {
             Time.GetDateTime();
                  Interface.DisplayDateTime();
@@ -153,14 +157,16 @@ static QState Lume_state_machine_idle(Lume_state_machine * const me, QEvt const 
         /* ${SMs::Lume_state_machi~::SM::global::Lume::idle::BTN_DOWN} */
         case BTN_DOWN_SIG: {
             Lcd.Backlight(100);
+
             TmrMenu.StartOrRestart();
+
             status_ = Q_TRAN(&Lume_state_machine_hours);
             break;
         }
         /* ${SMs::Lume_state_machi~::SM::global::Lume::idle::BTN_UP} */
         case BTN_UP_SIG: {
             Lcd.Backlight(100);
-               TmrMenu.StartOrRestart();
+            TmrMenu.StartOrRestart();
             status_ = Q_TRAN(&Lume_state_machine_color_minute);
             break;
         }
@@ -177,7 +183,7 @@ static QState Lume_state_machine_Menu(Lume_state_machine * const me, QEvt const 
     switch (e->sig) {
         /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::TIMEOUT} */
         case TIMEOUT_SIG: {
-            ResetColors(ClrH, ClrM);
+                ResetColors(ClrH, ClrM);
                  Time.SetDateTime();
                  IndicateNewSecond();
                  Lcd.Backlight(0);
@@ -186,6 +192,7 @@ static QState Lume_state_machine_Menu(Lume_state_machine * const me, QEvt const 
             break;
         }
         case BUTTON_PRESSED_SIG: {
+
             TmrMenu.StartOrRestart();
             status_ = Q_HANDLED();
             break;
@@ -202,12 +209,14 @@ static QState Lume_state_machine_Menu(Lume_state_machine * const me, QEvt const 
     }
     return status_;
 }
+
 /*${SMs::Lume_state_machi~::SM::global::Lume::Menu::hours} .................*/
 static QState Lume_state_machine_hours(Lume_state_machine * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
         /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::hours} */
         case Q_ENTRY_SIG: {
+
             Lcd.PrintfInverted(8,  0, "%02u", Time.Curr.H);
             status_ = Q_HANDLED();
             break;
@@ -215,27 +224,28 @@ static QState Lume_state_machine_hours(Lume_state_machine * const me, QEvt const
         /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::hours} */
         case Q_EXIT_SIG: {
             Lcd.Printf(8,  0, "%02u", Time.Curr.H);
+
             status_ = Q_HANDLED();
             break;
         }
         /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::hours::BTN_PLUS} */
         case BTN_PLUS_SIG: {
             Time.Curr.IncH();
-                 Lcd.PrintfInverted(8,  0, "%02u", Time.Curr.H);
+            Lcd.PrintfInverted(8,  0, "%02u", Time.Curr.H);
             status_ = Q_HANDLED();
             break;
         }
         /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::hours::BTN_MINUS} */
         case BTN_MINUS_SIG: {
             Time.Curr.DecH();
-                Lcd.PrintfInverted(8,  0, "%02u", Time.Curr.H);
+            Lcd.PrintfInverted(8,  0, "%02u", Time.Curr.H);
             status_ = Q_HANDLED();
             break;
         }
         /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::hours::BTN_UP} */
         case BTN_UP_SIG: {
-            TmrMenu.Stop();
-                  ResetColors(ClrH, ClrM);
+                 TmrMenu.Stop();
+                 ResetColors(ClrH, ClrM);
                  Time.SetDateTime();
                  IndicateNewSecond();
                  Lcd.Backlight(0);
@@ -254,6 +264,7 @@ static QState Lume_state_machine_hours(Lume_state_machine * const me, QEvt const
     }
     return status_;
 }
+
 /*${SMs::Lume_state_machi~::SM::global::Lume::Menu::minutes} ...............*/
 static QState Lume_state_machine_minutes(Lume_state_machine * const me, QEvt const * const e) {
     QState status_;
@@ -301,6 +312,7 @@ static QState Lume_state_machine_minutes(Lume_state_machine * const me, QEvt con
     }
     return status_;
 }
+
 /*${SMs::Lume_state_machi~::SM::global::Lume::Menu::day} ...................*/
 static QState Lume_state_machine_day(Lume_state_machine * const me, QEvt const * const e) {
     QState status_;
@@ -348,6 +360,7 @@ static QState Lume_state_machine_day(Lume_state_machine * const me, QEvt const *
     }
     return status_;
 }
+
 /*${SMs::Lume_state_machi~::SM::global::Lume::Menu::color_minute} ..........*/
 static QState Lume_state_machine_color_minute(Lume_state_machine * const me, QEvt const * const e) {
     QState status_;
@@ -403,6 +416,7 @@ static QState Lume_state_machine_color_minute(Lume_state_machine * const me, QEv
     }
     return status_;
 }
+
 /*${SMs::Lume_state_machi~::SM::global::Lume::Menu::month} .................*/
 static QState Lume_state_machine_month(Lume_state_machine * const me, QEvt const * const e) {
     QState status_;
@@ -450,6 +464,7 @@ static QState Lume_state_machine_month(Lume_state_machine * const me, QEvt const
     }
     return status_;
 }
+
 /*${SMs::Lume_state_machi~::SM::global::Lume::Menu::color_hour} ............*/
 static QState Lume_state_machine_color_hour(Lume_state_machine * const me, QEvt const * const e) {
     QState status_;
@@ -503,6 +518,7 @@ static QState Lume_state_machine_color_hour(Lume_state_machine * const me, QEvt 
     }
     return status_;
 }
+
 /*${SMs::Lume_state_machi~::SM::global::Lume::Menu::year} ..................*/
 static QState Lume_state_machine_year(Lume_state_machine * const me, QEvt const * const e) {
     QState status_;
@@ -553,6 +569,7 @@ static QState Lume_state_machine_year(Lume_state_machine * const me, QEvt const 
     }
     return status_;
 }
+
 /*${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_low} ........*/
 static QState Lume_state_machine_brightness_low(Lume_state_machine * const me, QEvt const * const e) {
     QState status_;
@@ -602,6 +619,7 @@ static QState Lume_state_machine_brightness_low(Lume_state_machine * const me, Q
     }
     return status_;
 }
+
 /*${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_high} .......*/
 static QState Lume_state_machine_brightness_high(Lume_state_machine * const me, QEvt const * const e) {
     QState status_;
@@ -651,6 +669,7 @@ static QState Lume_state_machine_brightness_high(Lume_state_machine * const me, 
     }
     return status_;
 }
+
 /*${SMs::Lume_state_machi~::SM::global::Lume::Menu::threshold} .............*/
 static QState Lume_state_machine_threshold(Lume_state_machine * const me, QEvt const * const e) {
     QState status_;
@@ -708,9 +727,7 @@ static QState Lume_state_machine_final(Lume_state_machine * const me, QEvt const
     switch (e->sig) {
         /* ${SMs::Lume_state_machi~::SM::final} */
         case Q_ENTRY_SIG: {
-            printf("
-            Bye! Bye!
-            "); exit(0);
+            printf(" Bye! Bye!"); exit(0);
             status_ = Q_HANDLED();
             break;
         }

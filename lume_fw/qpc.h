@@ -50,6 +50,7 @@ typedef struct {
       ((Q_MSM_UPCAST(me))->temp.fun = Q_STATE_CAST(super_), (QState)Q_RET_SUPER)
 #define QMSM_DISPATCH(me_, e_) (QMsm_dispatch_(me_, e_))
 #define QMSM_INIT(me_, e_) (QMsm_init_(me_, e_))    // Macro for external calls
+
                                                     // for compatibility with QP
 #ifdef __cplusplus
 extern "C" {
