@@ -1,11 +1,11 @@
 /*
  * main.cpp
  *
- *  Created on: 20 ôåâð. 2014 ã.
+ *  Created on: 20 Ã´Ã¥Ã¢Ã°. 2014 Ã£.
  *      Author: g.kruglov
  */
 
-
+#include <EventHandlers.h>
 #include "hal.h"
 #include "MsgQ.h"
 #include "shell.h"
@@ -21,7 +21,6 @@
 #include "Mirilli.h"
 #include "kl_adc.h"
 #include "lume_state_machine.h"
-#include "TimeSettings.h"
 #include "qpc.h"
 
 #if 1 // ======================== Variables and defines ========================
@@ -32,8 +31,6 @@ void ITask();
 
 
 Interface_t Interface;
-
-enum Btns_t {btnUp=0, btnDown=1, btnPlus=2, btnMinus=3};
 
 #endif
 
@@ -81,14 +78,14 @@ void ITask() {
     //Enable state machine
     Lume_state_machine_ctor();
     QMSM_INIT(the_lume_state_machine, (QEvt *)0);
-    QEvt e;
+    LumeQEvt e;
     //main cycle
     while(true) {
         EvtMsg_t Msg = EvtQMain.Fetch(TIME_INFINITE);
-        e.sig = Msg.ID;
+        e.super.sig = Msg.ID;
         e.Ptr = Msg.Ptr;
         e.Value = Msg.Value;
-        QMSM_DISPATCH(the_lume_state_machine,  &e);
+        QMSM_DISPATCH(the_lume_state_machine,  &(e.super));
     }
 }
 
