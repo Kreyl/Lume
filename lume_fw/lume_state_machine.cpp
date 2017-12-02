@@ -15,19 +15,15 @@
 * for more details.
 *****************************************************************************/
 /*${.::lume_state_machine.cpp} .............................................*/
+#include <EventHandlers.h>
 #include "qpc.h"
 #include "lume_state_machine.h"
+#include "shell.h"
 #include "kl_lib.h"
 #include "lcd1200.h"
-#include "kl_time.h"
+#include "led.h"
 #include "interface.h"
 #include "Mirilli.h"
-#include "kl_adc.h"
-#include "lume_state_machine.h"
-#include "TimeSettings.h"
-
-
-
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
@@ -49,18 +45,17 @@ static QState Lume_state_machine_global(Lume_state_machine * const me, QEvt cons
 static QState Lume_state_machine_Lume(Lume_state_machine * const me, QEvt const * const e);
 static QState Lume_state_machine_idle(Lume_state_machine * const me, QEvt const * const e);
 static QState Lume_state_machine_Menu(Lume_state_machine * const me, QEvt const * const e);
-static QState Lume_state_machine_second_screen(Lume_state_machine * const me, QEvt const * const e);
+static QState Lume_state_machine_change_time(Lume_state_machine * const me, QEvt const * const e);
 static QState Lume_state_machine_hours(Lume_state_machine * const me, QEvt const * const e);
-static QState Lume_state_machine_brightness_high(Lume_state_machine * const me, QEvt const * const e);
-static QState Lume_state_machine_brightness_low(Lume_state_machine * const me, QEvt const * const e);
-static QState Lume_state_machine_minutes(Lume_state_machine * const me, QEvt const * const e);
-static QState Lume_state_machine_threshold(Lume_state_machine * const me, QEvt const * const e);
-static QState Lume_state_machine_background(Lume_state_machine * const me, QEvt const * const e);
-static QState Lume_state_machine_day(Lume_state_machine * const me, QEvt const * const e);
-static QState Lume_state_machine_color_hour(Lume_state_machine * const me, QEvt const * const e);
-static QState Lume_state_machine_color_minute(Lume_state_machine * const me, QEvt const * const e);
 static QState Lume_state_machine_month(Lume_state_machine * const me, QEvt const * const e);
+static QState Lume_state_machine_minutes(Lume_state_machine * const me, QEvt const * const e);
+static QState Lume_state_machine_day(Lume_state_machine * const me, QEvt const * const e);
 static QState Lume_state_machine_year(Lume_state_machine * const me, QEvt const * const e);
+static QState Lume_state_machine_color_minute(Lume_state_machine * const me, QEvt const * const e);
+static QState Lume_state_machine_color_hour(Lume_state_machine * const me, QEvt const * const e);
+static QState Lume_state_machine_brightness_high(Lume_state_machine * const me, QEvt const * const e);
+static QState Lume_state_machine_threshold(Lume_state_machine * const me, QEvt const * const e);
+static QState Lume_state_machine_brightness_low(Lume_state_machine * const me, QEvt const * const e);
 
 #ifdef DESKTOP
 static QState Lume_state_machine_final(Lume_state_machine * const me, QEvt const * const e);
@@ -110,10 +105,27 @@ static QState Lume_state_machine_global(Lume_state_machine * const me, QEvt cons
 static QState Lume_state_machine_Lume(Lume_state_machine * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
+        /* ${SMs::Lume_state_machi~::SM::global::Lume} */
+        case Q_ENTRY_SIG: {
+            //SaveSettings
+                RTC->BKP1R = Settings.R1;
+                RTC->BKP2R = Settings.R2;
+                RTC->BKP3R = Settings.R3;
+            status_ = Q_HANDLED();
+            break;
+        }
         /* ${SMs::Lume_state_machi~::SM::global::Lume::SHELL_COMMAND} */
         case SHELL_COMMAND_SIG: {
-            OnCmd((Shell_t*)e->Ptr);
-                  ((Shell_t*)e->Ptr)->SignalCmdProcessed();
+            OnCmd((Shell_t*)((LumeQEvt*)e)->Ptr);
+                  ((Shell_t*)((LumeQEvt*)e)->Ptr)->SignalCmdProcessed();
+            status_ = Q_HANDLED();
+            break;
+        }
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::LUM_CHANGED} */
+        case LUM_CHANGED_SIG: {
+            CurrentLum = ((LumeQEvt*)e)->Value / 2;
+                if(CurrentLum > 99) CurrentLum = 99;
+                Lcd.Printf(14, 2, "%02u", CurrentLum);
             status_ = Q_HANDLED();
             break;
         }
@@ -131,17 +143,13 @@ static QState Lume_state_machine_idle(Lume_state_machine * const me, QEvt const 
         /* ${SMs::Lume_state_machi~::SM::global::Lume::idle} */
         case Q_ENTRY_SIG: {
             //ShowMenuElements
-                Interface.Reset();
-                Interface.ResetFirstScreen();
+               Interface.Reset();
                 Interface.DisplayDateTime();
-                 //SaveSettings
-                RTC->BKP1R = Settings.R1;
-                RTC->BKP2R = Settings.R2;
-                RTC->BKP3R = Settings.R3;
+                Interface.DisplayNotTimeSettings(CurrentLum);
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::idle::TICK_SEC} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::idle::TIC_SEC} */
         case TICK_SEC_SIG: {
             Time.GetDateTime();
                  Interface.DisplayDateTime();
@@ -151,19 +159,12 @@ static QState Lume_state_machine_idle(Lume_state_machine * const me, QEvt const 
         }
         /* ${SMs::Lume_state_machi~::SM::global::Lume::idle::BTN_DOWN} */
         case BTN_DOWN_SIG: {
-            Lcd.Backlight(100);
-               TmrMenu.StartOrRestart();
             status_ = Q_TRAN(&Lume_state_machine_hours);
             break;
         }
         /* ${SMs::Lume_state_machi~::SM::global::Lume::idle::BTN_UP} */
         case BTN_UP_SIG: {
-            Lcd.Backlight(100);
-               TmrMenu.StartOrRestart();
-                Interface.Reset();
-                Interface.ResetSecondScreen();
-               Interface.DisplaySecondScreen(CurrentLum);
-            status_ = Q_TRAN(&Lume_state_machine_brightness_low);
+            status_ = Q_TRAN(&Lume_state_machine_color_minute);
             break;
         }
         default: {
@@ -177,18 +178,32 @@ static QState Lume_state_machine_idle(Lume_state_machine * const me, QEvt const 
 static QState Lume_state_machine_Menu(Lume_state_machine * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::TIMEOUT} */
-        case TIMEOUT_SIG: {
-            ResetColors(ClrH, ClrM, Settings.BckGrnd);
-                 Time.SetDateTime();
-                 IndicateNewSecond();
-                 Lcd.Backlight(0);
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu} */
+        case Q_EXIT_SIG: {
+            RTC->BKP1R = Settings.R1;
+                 RTC->BKP2R = Settings.R2;
+                 RTC->BKP3R = Settings.R3;
                  TmrMenu.Stop();
-            status_ = Q_TRAN(&Lume_state_machine_idle);
+                 Lcd.Backlight(0);
+            status_ = Q_HANDLED();
             break;
         }
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::TIC_SEC} */
+        case TICK_SEC_SIG: {
+            IndicateNewSecond();
+            status_ = Q_HANDLED();
+            break;
+        }
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::BUTTON_PRESSED} */
         case BUTTON_PRESSED_SIG: {
-        	  TmrMenu.StartOrRestart();
+            TmrMenu.StartOrRestart();
+            status_ = Q_HANDLED();
+            break;
+        }
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::TIMEOUT} */
+        case TIMEOUT_SIG: {
+            status_ = Q_TRAN(&Lume_state_machine_idle);
+            break;
         }
         default: {
             status_ = Q_SUPER(&Lume_state_machine_Lume);
@@ -197,360 +212,304 @@ static QState Lume_state_machine_Menu(Lume_state_machine * const me, QEvt const 
     }
     return status_;
 }
-/*${SMs::Lume_state_machi~::SM::global::Lume::Menu::second_screen} ..............*/
-static QState Lume_state_machine_second_screen(Lume_state_machine * const me, QEvt const * const e) {
+/*${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time} ...........*/
+static QState Lume_state_machine_change_time(Lume_state_machine * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        case LUM_CHANGED_SIG: {
-            	CurrentLum = e->Value / 2;
-            	    if(CurrentLum > 99) CurrentLum = 99;
-            	    Interface.DisplayLum(CurrentLum);
-                     status_ = Q_HANDLED();
-                 break;
-                    }
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time} */
+        case Q_EXIT_SIG: {
+                 ResetColors(ClrH, ClrM);
+                 Time.SetDateTime();
+                 IndicateNewSecond();
+            status_ = Q_HANDLED();
+            break;
+        }
         default: {
             status_ = Q_SUPER(&Lume_state_machine_Menu);
             break;
         }
-
     }
     return status_;
 }
-/*${SMs::Lume_state_machi~::SM::global::Lume::Menu::hours} .................*/
+/*${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::hours} ....*/
 static QState Lume_state_machine_hours(Lume_state_machine * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::hours} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::hours} */
         case Q_ENTRY_SIG: {
-            Interface.DisplayHoursInverted();
+            Lcd.PrintfInverted(8,  0, "%02u", Time.Curr.H);
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::hours} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::hours} */
         case Q_EXIT_SIG: {
-            Interface.DisplayHours();
+            Lcd.Printf(8,  0, "%02u", Time.Curr.H);
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::hours::BTN_PLUS} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::hours::BTN_PLUS} */
         case BTN_PLUS_SIG: {
             Time.Curr.IncH();
-                   Interface.DisplayHoursInverted();
+                 Lcd.PrintfInverted(8,  0, "%02u", Time.Curr.H);
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::hours::BTN_MINUS} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::hours::BTN_MINUS} */
         case BTN_MINUS_SIG: {
             Time.Curr.DecH();
-                  Interface.DisplayHoursInverted();
+                Lcd.PrintfInverted(8,  0, "%02u", Time.Curr.H);
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::hours::BTN_UP} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::hours::BTN_UP} */
         case BTN_UP_SIG: {
-            TmrMenu.Stop();
-                  ResetColors(ClrH, ClrM, Settings.BckGrnd);
-                 Time.SetDateTime();
-                 IndicateNewSecond();
-                 Lcd.Backlight(0);
             status_ = Q_TRAN(&Lume_state_machine_idle);
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::hours::BTN_DOWN} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::hours::BTN_DOWN} */
         case BTN_DOWN_SIG: {
             status_ = Q_TRAN(&Lume_state_machine_minutes);
             break;
         }
         default: {
-            status_ = Q_SUPER(&Lume_state_machine_Menu);
+            status_ = Q_SUPER(&Lume_state_machine_change_time);
             break;
         }
     }
     return status_;
 }
-/*${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_high} .......*/
-static QState Lume_state_machine_brightness_high(Lume_state_machine * const me, QEvt const * const e) {
+/*${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::month} ....*/
+static QState Lume_state_machine_month(Lume_state_machine * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_high} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::month} */
         case Q_ENTRY_SIG: {
-            Interface.DisplayBrHighInverted();
+            Lcd.PrintfInverted(11, 1, "%02u", Time.Curr.Month);
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_high} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::month} */
         case Q_EXIT_SIG: {
-            Interface.DisplayBrHigh();
+            Lcd.Printf(11, 1, "%02u", Time.Curr.Month);
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_high::BTN_PLUS} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::month::BTN_PLUS} */
         case BTN_PLUS_SIG: {
-            if(Settings.BrtHi == TOP_BRIGHTNESS) Settings.BrtHi = 0;
-                                else Settings.BrtHi++;
-                 Interface.DisplayBrHighInverted();;
+            Time.Curr.IncMonth();
+                  Lcd.PrintfInverted(11, 1, "%02u", Time.Curr.Month);
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_high::BTN_MINUS} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::month::BTN_MINUS} */
         case BTN_MINUS_SIG: {
-            if(Settings.BrtHi == 0) Settings.BrtHi = TOP_BRIGHTNESS;
-                                else Settings.BrtHi--;
-                 Interface.DisplayBrHighInverted();
+            Time.Curr.DecMonth();
+                  Lcd.PrintfInverted(11, 1, "%02u", Time.Curr.Month);
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_high::BTN_DOWN} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::month::BTN_DOWN} */
         case BTN_DOWN_SIG: {
-            status_ = Q_TRAN(&Lume_state_machine_brightness_low);
+            status_ = Q_TRAN(&Lume_state_machine_year);
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_high::BTN_UP} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::month::BTN_UP} */
         case BTN_UP_SIG: {
-            status_ = Q_TRAN(&Lume_state_machine_threshold);
+            status_ = Q_TRAN(&Lume_state_machine_day);
             break;
         }
         default: {
-            status_ = Q_SUPER(&Lume_state_machine_second_screen);
+            status_ = Q_SUPER(&Lume_state_machine_change_time);
             break;
         }
     }
     return status_;
 }
-/*${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_low} ........*/
-static QState Lume_state_machine_brightness_low(Lume_state_machine * const me, QEvt const * const e) {
-    QState status_;
-    switch (e->sig) {
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_low} */
-        case Q_ENTRY_SIG: {
-            Interface.DisplayBrLowInverted();
-            status_ = Q_HANDLED();
-            break;
-        }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_low} */
-        case Q_EXIT_SIG: {
-            Interface.DisplayBrLow();
-            status_ = Q_HANDLED();
-            break;
-        }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_low::BTN_PLUS} */
-        case BTN_PLUS_SIG: {
-            if(Settings.BrtLo == TOP_BRIGHTNESS) Settings.BrtLo = 0;
-                                else Settings.BrtLo++;
-                    Interface.DisplayBrLowInverted();
-            status_ = Q_HANDLED();
-            break;
-        }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_low::BTN_MINUS} */
-        case BTN_MINUS_SIG: {
-            if(Settings.BrtLo == 0) Settings.BrtLo = TOP_BRIGHTNESS;
-                                else Settings.BrtLo--;
-                    Interface.DisplayBrLowInverted();
-            status_ = Q_HANDLED();
-            break;
-        }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_low::BTN_DOWN} */
-        case BTN_DOWN_SIG: {
-            TmrMenu.Stop();
-                 Lcd.Backlight(0);
-            status_ = Q_TRAN(&Lume_state_machine_idle);
-            break;
-        }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_low::BTN_UP} */
-        case BTN_UP_SIG: {
-            status_ = Q_TRAN(&Lume_state_machine_brightness_high);
-            break;
-        }
-        default: {
-            status_ = Q_SUPER(&Lume_state_machine_second_screen);
-            break;
-        }
-    }
-    return status_;
-}
-/*${SMs::Lume_state_machi~::SM::global::Lume::Menu::minutes} ...............*/
+/*${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::minutes} ..*/
 static QState Lume_state_machine_minutes(Lume_state_machine * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::minutes} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::minutes} */
         case Q_ENTRY_SIG: {
-            Interface.DisplayMinutesInverted();
+            Lcd.PrintfInverted(11, 0, "%02u", Time.Curr.M);
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::minutes} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::minutes} */
         case Q_EXIT_SIG: {
-            Interface.DisplayMinutes();
+            Lcd.Printf(11, 0, "%02u", Time.Curr.M);
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::minutes::BTN_PLUS} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::minutes::BTN_PLUS} */
         case BTN_PLUS_SIG: {
             Time.Curr.IncM(); Time.Curr.S = 0;
-                Interface.DisplayMinutesInverted();
+                 Lcd.PrintfInverted(11, 0, "%02u", Time.Curr.M);
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::minutes::BTN_MINUS} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::minutes::BTN_MINUS} */
         case BTN_MINUS_SIG: {
             Time.Curr.DecM(); Time.Curr.S = 0;
-                Interface.DisplayMinutesInverted();
+                  Lcd.PrintfInverted(11, 0, "%02u", Time.Curr.M);
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::minutes::BTN_DOWN} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::minutes::BTN_DOWN} */
         case BTN_DOWN_SIG: {
             status_ = Q_TRAN(&Lume_state_machine_day);
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::minutes::BTN_UP} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::minutes::BTN_UP} */
         case BTN_UP_SIG: {
             status_ = Q_TRAN(&Lume_state_machine_hours);
             break;
         }
         default: {
-            status_ = Q_SUPER(&Lume_state_machine_Menu);
+            status_ = Q_SUPER(&Lume_state_machine_change_time);
             break;
         }
     }
     return status_;
 }
-/*${SMs::Lume_state_machi~::SM::global::Lume::Menu::threshold} .............*/
-static QState Lume_state_machine_threshold(Lume_state_machine * const me, QEvt const * const e) {
+/*${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::day} ......*/
+static QState Lume_state_machine_day(Lume_state_machine * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::threshold} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::day} */
         case Q_ENTRY_SIG: {
-            Interface.DisplayThresholdInverted();
+            Lcd.PrintfInverted(14, 1, "%02u", Time.Curr.Day);
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::threshold} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::day} */
         case Q_EXIT_SIG: {
-            Interface.DisplayThreshold();
+            Lcd.Printf(14, 1, "%02u", Time.Curr.Day);
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::threshold::BTN_PLUS} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::day::BTN_PLUS} */
         case BTN_PLUS_SIG: {
-            if(Settings.Threshold == 99) Settings.Threshold = 0;
-                 else Settings.Threshold++;
-                 Interface.DisplayThresholdInverted();
+            Time.Curr.IncDay();
+                Lcd.PrintfInverted(14, 1, "%02u", Time.Curr.Day);
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::threshold::BTN_MINUS} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::day::BTN_MINUS} */
         case BTN_MINUS_SIG: {
-            if(Settings.Threshold == 0) Settings.Threshold = 99;
-                                else Settings.Threshold--;
-                  Interface.DisplayThresholdInverted();
+            Time.Curr.DecDay();
+                Lcd.PrintfInverted(14, 1, "%02u", Time.Curr.Day);
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::threshold::BTN_UP} */
-        case BTN_UP_SIG: {
-            status_ = Q_TRAN(&Lume_state_machine_background);
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::day::BTN_DOWN} */
+        case BTN_DOWN_SIG: {
+            status_ = Q_TRAN(&Lume_state_machine_month);
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::threshold::BTN_DOWN} */
-        case BTN_DOWN_SIG: {
-            status_ = Q_TRAN(&Lume_state_machine_brightness_high);
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::day::BTN_UP} */
+        case BTN_UP_SIG: {
+            status_ = Q_TRAN(&Lume_state_machine_minutes);
             break;
         }
         default: {
-            status_ = Q_SUPER(&Lume_state_machine_second_screen);
+            status_ = Q_SUPER(&Lume_state_machine_change_time);
             break;
         }
     }
     return status_;
 }
-/*${SMs::Lume_state_machi~::SM::global::Lume::Menu::background} ............*/
-static QState Lume_state_machine_background(Lume_state_machine * const me, QEvt const * const e) {
+/*${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::year} .....*/
+static QState Lume_state_machine_year(Lume_state_machine * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::background} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::year} */
         case Q_ENTRY_SIG: {
-            Interface.DisplayBackgroundInverted();
+            Lcd.PrintfInverted(6,  1, "%04u", Time.Curr.Year);
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::background} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::year} */
         case Q_EXIT_SIG: {
-            Interface.DisplayBackground();
+            Lcd.Printf(6,  1, "%04u", Time.Curr.Year);
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::background::BTN_PLUS} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::year::BTN_PLUS} */
         case BTN_PLUS_SIG: {
-            if(Settings.BckGrnd == 99) Settings.BckGrnd = 0;
-                 else Settings.BckGrnd++;
-                 Interface.DisplayBackgroundInverted();
+            Time.Curr.IncYear();
+                Lcd.PrintfInverted(6,  1, "%04u", Time.Curr.Year);
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::background::BTN_MINUS} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::year::BTN_MINUS} */
         case BTN_MINUS_SIG: {
-            if(Settings.BckGrnd == 0) Settings.BckGrnd = 99;
-                                else Settings.BckGrnd--;
-                  Interface.DisplayBackgroundInverted();
+            Time.Curr.DecYear();
+                 Lcd.PrintfInverted(6,  1, "%04u", Time.Curr.Year);
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::background::BTN_UP} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::year::BTN_UP} */
         case BTN_UP_SIG: {
-            status_ = Q_TRAN(&Lume_state_machine_color_minute);
+            status_ = Q_TRAN(&Lume_state_machine_month);
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::background::BTN_DOWN} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::change_time::year::BTN_DOWN} */
         case BTN_DOWN_SIG: {
             status_ = Q_TRAN(&Lume_state_machine_threshold);
             break;
         }
         default: {
-            status_ = Q_SUPER(&Lume_state_machine_second_screen);
+            status_ = Q_SUPER(&Lume_state_machine_change_time);
             break;
         }
     }
     return status_;
 }
-/*${SMs::Lume_state_machi~::SM::global::Lume::Menu::day} ...................*/
-static QState Lume_state_machine_day(Lume_state_machine * const me, QEvt const * const e) {
+/*${SMs::Lume_state_machi~::SM::global::Lume::Menu::color_minute} ..........*/
+static QState Lume_state_machine_color_minute(Lume_state_machine * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::day} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::color_minute} */
         case Q_ENTRY_SIG: {
-            Interface.DisplayDayInverted();
+            Lcd.PrintfInverted(12, 7, "%03u", Settings.ClrIdM);
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::day} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::color_minute} */
         case Q_EXIT_SIG: {
-            Interface.DisplayDay();
+            Lcd.Printf(12, 7, "%03u", Settings.ClrIdM);
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::day::BTN_PLUS} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::color_minute::BTN_PLUS} */
         case BTN_PLUS_SIG: {
-            Time.Curr.IncDay();
-               Interface.DisplayDayInverted();
+            if(Settings.ClrIdH == 360) Settings.ClrIdH = 0;
+                                else Settings.ClrIdH++;
+                                ClrH.H = Settings.ClrIdH;
+                                IndicateNewSecond();
+                  Lcd.PrintfInverted(12, 7, "%03u", Settings.ClrIdM);
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::day::BTN_MINUS} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::color_minute::BTN_MINUS} */
         case BTN_MINUS_SIG: {
-            Time.Curr.DecDay();
-                Interface.DisplayDayInverted();
+            if(Settings.ClrIdH == 0) Settings.ClrIdH = 360;
+                                else Settings.ClrIdH--;
+                                ClrH.H = Settings.ClrIdH;
+                                IndicateNewSecond();
+                  Lcd.PrintfInverted(12, 7, "%03u", Settings.ClrIdM);
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::day::BTN_DOWN} */
-        case BTN_DOWN_SIG: {
-            status_ = Q_TRAN(&Lume_state_machine_month);
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::color_minute::BTN_UP} */
+        case BTN_UP_SIG: {
+            status_ = Q_TRAN(&Lume_state_machine_color_hour);
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::day::BTN_UP} */
-        case BTN_UP_SIG: {
-            status_ = Q_TRAN(&Lume_state_machine_minutes);
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::color_minute::BTN_DOWN} */
+        case BTN_DOWN_SIG: {
+            status_ = Q_TRAN(&Lume_state_machine_idle);
             break;
         }
         default: {
@@ -566,142 +525,44 @@ static QState Lume_state_machine_color_hour(Lume_state_machine * const me, QEvt 
     switch (e->sig) {
         /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::color_hour} */
         case Q_ENTRY_SIG: {
-            Interface.DisplayColorHourInverted();
+            Lcd.PrintfInverted(12, 6, "%03u", Settings.ClrIdH);
+            status_ = Q_HANDLED();
+            break;
+        }
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::color_hour} */
+        case Q_EXIT_SIG: {
+            Lcd.Printf(12, 6, "%03u", Settings.ClrIdH);
             status_ = Q_HANDLED();
             break;
         }
         /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::color_hour::BTN_PLUS} */
         case BTN_PLUS_SIG: {
-            if(Settings.ClrIdH == 360) Settings.ClrIdH = 0;
-                                else Settings.ClrIdH++;
-                                ClrH.H = Settings.ClrIdH;
+            if(Settings.ClrIdM == 360) Settings.ClrIdM = 0;
+                                else Settings.ClrIdM++;
+                                ClrM.H = Settings.ClrIdM;
                                 IndicateNewSecond();
-                  Interface.DisplayColorHourInverted();
+                 Lcd.PrintfInverted(12, 6, "%03u", Settings.ClrIdH);
             status_ = Q_HANDLED();
             break;
         }
         /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::color_hour::BTN_MINUS} */
         case BTN_MINUS_SIG: {
-            if(Settings.ClrIdH == 0) Settings.ClrIdH = 360;
-                                else Settings.ClrIdH--;
-                                ClrH.H = Settings.ClrIdH;
+            if(Settings.ClrIdM == 0) Settings.ClrIdM = 360;
+                                else Settings.ClrIdM--;
+                                ClrM.H = Settings.ClrIdM;
                                 IndicateNewSecond();
-                  Interface.DisplayColorHourInverted();
+                 Lcd.PrintfInverted(12, 6, "%03u", Settings.ClrIdH);
             status_ = Q_HANDLED();
             break;
         }
         /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::color_hour::BTN_UP} */
         case BTN_UP_SIG: {
-            Interface.Reset();
-            Interface.ResetFirstScreen();
-                Interface.DisplayDateTime();
-            status_ = Q_TRAN(&Lume_state_machine_year);
+            status_ = Q_TRAN(&Lume_state_machine_brightness_low);
             break;
         }
         /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::color_hour::BTN_DOWN} */
         case BTN_DOWN_SIG: {
-        	Interface.DisplayColorHour();
-        	status_ = Q_TRAN(&Lume_state_machine_color_minute);
-            break;
-        }
-        default: {
-            status_ = Q_SUPER(&Lume_state_machine_second_screen);
-            break;
-        }
-    }
-    return status_;
-}
-/*${SMs::Lume_state_machi~::SM::global::Lume::Menu::color_minute} ..........*/
-static QState Lume_state_machine_color_minute(Lume_state_machine * const me, QEvt const * const e) {
-    QState status_;
-    switch (e->sig) {
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::color_minute} */
-        case Q_ENTRY_SIG: {
-            Interface.DisplayColorMinInverted();
-            status_ = Q_HANDLED();
-            break;
-        }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::color_minute} */
-        case Q_EXIT_SIG: {
-            Interface.DisplayColorMin();
-            status_ = Q_HANDLED();
-            break;
-        }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::color_minute::BTN_PLUS} */
-        case BTN_PLUS_SIG: {
-            if(Settings.ClrIdM == 360) Settings.ClrIdM = 0;
-                                else Settings.ClrIdM++;
-                                ClrM.H = Settings.ClrIdM;
-                                IndicateNewSecond();
-                 Interface.DisplayColorMinInverted();
-            status_ = Q_HANDLED();
-            break;
-        }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::color_minute::BTN_MINUS} */
-        case BTN_MINUS_SIG: {
-            if(Settings.ClrIdM == 0) Settings.ClrIdM = 360;
-                                else Settings.ClrIdM--;
-                                ClrM.H = Settings.ClrIdM;
-                                IndicateNewSecond();
-                 Interface.DisplayColorMinInverted();
-            status_ = Q_HANDLED();
-            break;
-        }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::color_minute::BTN_UP} */
-        case BTN_UP_SIG: {
-            status_ = Q_TRAN(&Lume_state_machine_color_hour);
-            break;
-        }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::color_minute::BTN_DOWN} */
-        case BTN_DOWN_SIG: {
-            status_ = Q_TRAN(&Lume_state_machine_background);
-            break;
-        }
-        default: {
-            status_ = Q_SUPER(&Lume_state_machine_second_screen);
-            break;
-        }
-    }
-    return status_;
-}
-/*${SMs::Lume_state_machi~::SM::global::Lume::Menu::month} .................*/
-static QState Lume_state_machine_month(Lume_state_machine * const me, QEvt const * const e) {
-    QState status_;
-    switch (e->sig) {
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::month} */
-        case Q_ENTRY_SIG: {
-            Interface.DisplayMonthInverted();
-            status_ = Q_HANDLED();
-            break;
-        }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::month} */
-        case Q_EXIT_SIG: {
-            Interface.DisplayMonth();
-            status_ = Q_HANDLED();
-            break;
-        }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::month::BTN_PLUS} */
-        case BTN_PLUS_SIG: {
-            Time.Curr.IncMonth();
-                  Interface.DisplayMonthInverted();
-            status_ = Q_HANDLED();
-            break;
-        }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::month::BTN_MINUS} */
-        case BTN_MINUS_SIG: {
-            Time.Curr.DecMonth();
-                  Interface.DisplayMonthInverted();
-            status_ = Q_HANDLED();
-            break;
-        }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::month::BTN_DOWN} */
-        case BTN_DOWN_SIG: {
-            status_ = Q_TRAN(&Lume_state_machine_year);
-            break;
-        }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::month::BTN_UP} */
-        case BTN_UP_SIG: {
-            status_ = Q_TRAN(&Lume_state_machine_day);
+            status_ = Q_TRAN(&Lume_state_machine_color_minute);
             break;
         }
         default: {
@@ -711,44 +572,143 @@ static QState Lume_state_machine_month(Lume_state_machine * const me, QEvt const
     }
     return status_;
 }
-/*${SMs::Lume_state_machi~::SM::global::Lume::Menu::year} ..................*/
-static QState Lume_state_machine_year(Lume_state_machine * const me, QEvt const * const e) {
+/*${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_high} .......*/
+static QState Lume_state_machine_brightness_high(Lume_state_machine * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::year} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_high} */
         case Q_ENTRY_SIG: {
-            Interface.DisplayYearInverted();
+            Lcd.PrintfInverted(14, 4, "%02u", Settings.BrtHi);
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::year::BTN_PLUS} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_high} */
+        case Q_EXIT_SIG: {
+            Lcd.Printf(14, 4, "%02u", Settings.BrtHi);
+            status_ = Q_HANDLED();
+            break;
+        }
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_high::BTN_PLUS} */
         case BTN_PLUS_SIG: {
-            Time.Curr.IncYear();
-                Interface.DisplayYearInverted();
+            if(Settings.BrtHi == TOP_BRIGHTNESS) Settings.BrtHi = 0;
+                                else Settings.BrtHi++;
+                 Lcd.PrintfInverted(14, 4, "%02u", Settings.BrtHi);
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::year::BTN_MINUS} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_high::BTN_MINUS} */
         case BTN_MINUS_SIG: {
-            Time.Curr.DecYear();
-                 Interface.DisplayYearInverted();
+            if(Settings.BrtHi == 0) Settings.BrtHi = TOP_BRIGHTNESS;
+                                else Settings.BrtHi--;
+                 Lcd.PrintfInverted(14, 4, "%02u", Settings.BrtHi);
             status_ = Q_HANDLED();
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::year::BTN_UP} */
-        case BTN_UP_SIG: {
-        	Interface.DisplayYear();
-            status_ = Q_TRAN(&Lume_state_machine_month);
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_high::BTN_DOWN} */
+        case BTN_DOWN_SIG: {
+            status_ = Q_TRAN(&Lume_state_machine_brightness_low);
             break;
         }
-        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::year::BTN_DOWN} */
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_high::BTN_UP} */
+        case BTN_UP_SIG: {
+            status_ = Q_TRAN(&Lume_state_machine_threshold);
+            break;
+        }
+        default: {
+            status_ = Q_SUPER(&Lume_state_machine_Menu);
+            break;
+        }
+    }
+    return status_;
+}
+/*${SMs::Lume_state_machi~::SM::global::Lume::Menu::threshold} .............*/
+static QState Lume_state_machine_threshold(Lume_state_machine * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::threshold} */
+        case Q_ENTRY_SIG: {
+            Lcd.PrintfInverted(14, 3, "%02u", Settings.Threshold);
+            status_ = Q_HANDLED();
+            break;
+        }
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::threshold} */
+        case Q_EXIT_SIG: {
+            Lcd.Printf(14, 3, "%02u", Settings.Threshold);
+            status_ = Q_HANDLED();
+            break;
+        }
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::threshold::BTN_PLUS} */
+        case BTN_PLUS_SIG: {
+            if(Settings.Threshold == 99) Settings.Threshold = 0;
+                 else Settings.Threshold++;
+                 Lcd.PrintfInverted(14, 3, "%02u", Settings.Threshold);
+            status_ = Q_HANDLED();
+            break;
+        }
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::threshold::BTN_MINUS} */
+        case BTN_MINUS_SIG: {
+            if(Settings.Threshold == 0) Settings.Threshold = 99;
+                                else Settings.Threshold--;
+                  Lcd.PrintfInverted(14, 3, "%02u", Settings.Threshold);
+            status_ = Q_HANDLED();
+            break;
+        }
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::threshold::BTN_DOWN} */
         case BTN_DOWN_SIG: {
-            ResetColors(ClrH, ClrM, Settings.BckGrnd);
-                 Time.SetDateTime();
-                 IndicateNewSecond();
-                 Interface.Reset();
-                Interface.ResetSecondScreen();
-                Interface.DisplaySecondScreen(CurrentLum);
+            status_ = Q_TRAN(&Lume_state_machine_brightness_high);
+            break;
+        }
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::threshold::BTN_UP} */
+        case BTN_UP_SIG: {
+            status_ = Q_TRAN(&Lume_state_machine_year);
+            break;
+        }
+        default: {
+            status_ = Q_SUPER(&Lume_state_machine_Menu);
+            break;
+        }
+    }
+    return status_;
+}
+/*${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_low} ........*/
+static QState Lume_state_machine_brightness_low(Lume_state_machine * const me, QEvt const * const e) {
+    QState status_;
+    switch (e->sig) {
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_low} */
+        case Q_ENTRY_SIG: {
+            Lcd.PrintfInverted(14, 5, "%02u", Settings.BrtLo);
+            status_ = Q_HANDLED();
+            break;
+        }
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_low} */
+        case Q_EXIT_SIG: {
+            Lcd.Printf(14, 5, "%02u", Settings.BrtLo);
+            status_ = Q_HANDLED();
+            break;
+        }
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_low::BTN_PLUS} */
+        case BTN_PLUS_SIG: {
+            if(Settings.BrtLo == TOP_BRIGHTNESS) Settings.BrtLo = 0;
+                                else Settings.BrtLo++;
+                 Lcd.PrintfInverted(14, 5, "%02u", Settings.BrtLo);
+            status_ = Q_HANDLED();
+            break;
+        }
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_low::BTN_MINUS} */
+        case BTN_MINUS_SIG: {
+            if(Settings.BrtLo == 0) Settings.BrtLo = TOP_BRIGHTNESS;
+                                else Settings.BrtLo--;
+                 Lcd.PrintfInverted(14, 5, "%02u", Settings.BrtLo);;
+            status_ = Q_HANDLED();
+            break;
+        }
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_low::BTN_UP} */
+        case BTN_UP_SIG: {
+            status_ = Q_TRAN(&Lume_state_machine_brightness_high);
+            break;
+        }
+        /* ${SMs::Lume_state_machi~::SM::global::Lume::Menu::brightness_low::BTN_DOWN} */
+        case BTN_DOWN_SIG: {
             status_ = Q_TRAN(&Lume_state_machine_color_hour);
             break;
         }
@@ -767,7 +727,7 @@ static QState Lume_state_machine_final(Lume_state_machine * const me, QEvt const
     switch (e->sig) {
         /* ${SMs::Lume_state_machi~::SM::final} */
         case Q_ENTRY_SIG: {
-            printf(" Bye! Bye!"); exit(0);
+            printf("Bye! Bye!"); exit(0);
             status_ = Q_HANDLED();
             break;
         }
@@ -779,8 +739,3 @@ static QState Lume_state_machine_final(Lume_state_machine * const me, QEvt const
     return status_;
 }
 #endif /* def DESKTOP */
-
-
-
-
-
