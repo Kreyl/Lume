@@ -120,7 +120,7 @@ void Lcd_t::WriteCmd(uint8_t AByte) {
 uint8_t Lcd_t::IPutChar(char c) {
     for(uint8_t i=0; i<6; i++) {
         uint8_t b = Font_6x8_Data[(uint32_t)c][i];
-        if(Inverted) b = ~b;
+        if(IInverted) b = ~b;
         uint16_t w = b;
         w = (w << 1) | 0x0001;
         IBuf[CurrentPosition++] = w;
@@ -130,7 +130,7 @@ uint8_t Lcd_t::IPutChar(char c) {
 }
 
 void Lcd_t::Printf(const uint8_t x, const uint8_t y, const char *S, ...) {
-    Inverted = false;
+    IInverted = false;
     msg_t msg = chSemWait(&semLcd);
     if(msg == MSG_OK) {
         GotoCharXY(x, y);
@@ -143,7 +143,7 @@ void Lcd_t::Printf(const uint8_t x, const uint8_t y, const char *S, ...) {
 }
 
 void Lcd_t::PrintfInverted(const uint8_t x, const uint8_t y, const char *S, ...) {
-    Inverted = true;
+    IInverted = true;
     msg_t msg = chSemWait(&semLcd);
     if(msg == MSG_OK) {
         GotoCharXY(x, y);

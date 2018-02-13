@@ -1,25 +1,11 @@
-update=25.08.2017 18:57:34
+update=30.01.2018 23:39:25
 version=1
-last_client=kicad
+last_client=eeschema
 [cvpcb]
 version=1
 NetIExt=net
 [cvpcb/libraries]
 EquName1=devcms
-[eeschema]
-version=1
-LibDir=D:/libs/Kicad
-[eeschema/libraries]
-LibName1=Connectors_kl
-LibName2=display_kl
-LibName3=pcb_details
-LibName4=power
-LibName5=Power_kl
-LibName6=st_kl
-LibName7=Tittar_kl
-LibName8=Switches
-LibName9=standard_logic
-LibName10=Transistors_kl
 [general]
 version=1
 [pcbnew]
@@ -41,3 +27,16 @@ SolderMaskMinWidth=0
 DrawSegmentWidth=0.381
 BoardOutlineThickness=0.381
 ModuleOutlineThickness=0.14986
+[schematic_editor]
+version=1
+PageLayoutDescrFile=
+PlotDirectoryName=
+SubpartIdSeparator=0
+SubpartFirstId=65
+NetFmtName=
+SpiceAjustPassiveValues=0
+LabSize=60
+ERC_TestSimilarLabels=1
+[eeschema]
+version=1
+LibDir=

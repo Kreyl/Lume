@@ -51,7 +51,7 @@ private:
     const PinOutputPWM_t BckLt{LCD_BCKLT};
     uint16_t IBuf[LCD_VIDEOBUF_SIZE];
     uint16_t CurrentPosition;   // x, y to place data to
-    bool Inverted = false;
+    bool IInverted = false;
     // Pin driving functions
     void XRES_Hi() { PinSetHi(LCD_XRES); }
     void XRES_Lo() { PinSetLo(LCD_XRES); }

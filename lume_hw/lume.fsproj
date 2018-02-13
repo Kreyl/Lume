@@ -3,9 +3,9 @@
 <!--   File    : lume.fsproj                 -->
 <!--   Format  : TopoR Project file          -->
 <!--   Version : 2                           -->
-<!--   Program : TopoR Lite 6.3.17658 Beta   -->
-<!--   Date    : Tuesday, September 19, 2017 -->
-<!--   Time    : 00:56                       -->
+<!--   Program : TopoR Lite 6.3.17875        -->
+<!--   Date    : Wednesday, October 11, 2017 -->
+<!--   Time    : 12:32                       -->
 <!--*****************************************-->
 
 <Project>
@@ -13,7 +13,7 @@
    <GUID>{541681B8-0681-444E-B391-E4F5BCDDF341}</GUID>
    <Documents>
       <Section name="PCB">
-         <File path=".\lume.fsx" isopened="1" dateChange="2017-09-18 23:45:33"/>
+         <File path=".\lume.fsx" isopened="0" dateChange="2017-09-19 00:27:54"/>
       </Section>
       <Section name="AutoRouting"/>
    </Documents>
