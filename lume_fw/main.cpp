@@ -1,10 +1,3 @@
-/*
- * main.cpp
- *
- *  Created on: 20 февр. 2014 г.
- *      Author: g.kruglov
- */
-
 #include <EventHandlers.h>
 #include "hal.h"
 #include "MsgQ.h"
@@ -25,6 +18,7 @@
 
 #if 1 // ======================== Variables and defines ========================
 // Forever
+#define STRINGIFY(str)  #str
 EvtMsgQ_t<EvtMsg_t, MAIN_EVT_Q_LEN> EvtQMain;
 extern CmdUart_t Uart;
 void ITask();
@@ -46,7 +40,7 @@ int main(void) {
     // ==== Init hardware ====
     EvtQMain.Init();
     Uart.Init(115200);
-    Printf("\r%S %S\r", APP_NAME, BUILD_TIME);
+    Printf("\r%S %S\r", APP_NAME, STRINGIFY(BUILD_TIME));
     Clk.PrintFreqs();
 
     SimpleSensors::Init();
