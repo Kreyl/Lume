@@ -106,6 +106,14 @@
 							</tool>
 						</toolChain>
 					</folderInfo>
+					<fileInfo id="com.atollic.truestudio.exe.debug.2093178888.182775324" name="main.cpp" rcbsApplicability="disable" resourcePath="main.cpp" toolsToInvoke="com.atollic.truestudio.exe.debug.toolchain.gpp.373107598.2010175142">
+						<tool id="com.atollic.truestudio.exe.debug.toolchain.gpp.373107598.2010175142" name="C++ Compiler" superClass="com.atollic.truestudio.exe.debug.toolchain.gpp.373107598">
+							<option id="com.atollic.truestudio.gpp.symbols.defined.1595930101" superClass="com.atollic.truestudio.gpp.symbols.defined" valueType="definedSymbols">
+								<listOptionValue builtIn="false" value="&quot;BUILD_TIME=&quot;\&quot;${current_date}\&quot;&quot;&quot;"/>
+							</option>
+							<inputType id="com.atollic.truestudio.gpp.input.164657294" superClass="com.atollic.truestudio.gpp.input"/>
+						</tool>
+					</fileInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
