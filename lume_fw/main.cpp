@@ -13,8 +13,6 @@
 #include "ws2812b.h"
 #include "Mirilli.h"
 #include "kl_adc.h"
-#include "lume_state_machine.h"
-#include "qpc.h"
 
 #if 1 // ======================== Variables and defines ========================
 // Forever
@@ -69,49 +67,27 @@ int main(void) {
 
 __noreturn
 void ITask() {
-    //Enable state machine
-    Lume_state_machine_ctor();
-    QMSM_INIT(the_lume_state_machine, (QEvt *)0);
     while(true) {
         EvtMsg_t Msg = EvtQMain.Fetch(TIME_INFINITE);
-        Printf("%u\r", Msg.ID);
-        LumeQEvt e;
-        e.super.sig = 0;
+//        Printf("%u\r", Msg.ID);
         switch(Msg.ID) {
             case evtIdShellCmd:
-                e.super.sig = SHELL_COMMAND_SIG;
-                e.Ptr = Msg.Ptr;
                 break;
 
-            case evtIdEverySecond: e.super.sig = TICK_SEC_SIG; break;
+            case evtIdEverySecond:
+                break;
 
             case evtIdAdcRslt:
-                e.super.sig = LUM_CHANGED_SIG;
-                e.Value = Msg.Value;
                 break;
 
             case evtIdButtons:
                 // Individual buttons
                 switch(Msg.BtnEvtInfo.BtnID) {
-                    case 0: e.super.sig = BTN_UP_SIG; break;
-                    case 1: e.super.sig = BTN_DOWN_SIG; break;
-                    case 2: e.super.sig = BTN_PLUS_SIG; break;
-                    case 3: e.super.sig = BTN_MINUS_SIG; break;
                     default: break;
                 }
-                QMSM_DISPATCH(the_lume_state_machine, &(e.super));
-                // Common event
-                e.super.sig = BUTTON_PRESSED_SIG;
                 break;
 
 
         } // switch
-
-//        e.super.sig = Msg.ID;
-//        e.Ptr = Msg.Ptr;
-//        e.Value = Msg.Value;
-        if(e.super.sig != 0) {
-            QMSM_DISPATCH(the_lume_state_machine,  &(e.super));
-        }
-    }
+    } // while true
 }
