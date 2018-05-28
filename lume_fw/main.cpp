@@ -18,7 +18,9 @@
 
 #if 1 // ======================== Variables and defines ========================
 // Forever
-#define STRINGIFY(str)  #str
+#define STR(x)  # x
+#define XSTR(x) STR(x)
+
 EvtMsgQ_t<EvtMsg_t, MAIN_EVT_Q_LEN> EvtQMain;
 extern CmdUart_t Uart;
 void ITask();
@@ -40,7 +42,7 @@ int main(void) {
     // ==== Init hardware ====
     EvtQMain.Init();
     Uart.Init(115200);
-    Printf("\r%S %S\r", APP_NAME, BUILD_TIME);
+    Printf("\r%S %S\r", APP_NAME, XSTR(BUILD_TIME));
     Clk.PrintFreqs();
 
     SimpleSensors::Init();

@@ -18,8 +18,18 @@ TimeCounter_t Time;
 #define RTC_TR_RESERVED_MASK    0x007F7F7FU
 #define RTC_DR_RESERVED_MASK    0x00FFFF3FU
 
+#if defined STM32F10X_LD_VL
+#define BCKPREG_CHECK   BKP->DR1
+#elif defined STM32F072xB
+#define BCKPREG_CHECK   RTC->BKP0R
+#endif
+
+static inline bool IsSetup()  { return (BCKPREG_CHECK == 0xA5A5); }
+static inline void SetSetup() { BCKPREG_CHECK = 0xA5A5; }
+
+
 void TimeCounter_t::Init() {
-    if(!BackupSpc::IsSetup()) {
+    if(!IsSetup()) {
         Printf("Nothing is set\r");
         // ==== Rtc config ====
         BackupSpc::Reset();     // Reset Backup Domain
