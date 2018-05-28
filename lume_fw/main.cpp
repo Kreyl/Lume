@@ -18,9 +18,6 @@
 
 #if 1 // ======================== Variables and defines ========================
 // Forever
-#define STR(x)  # x
-#define XSTR(x) STR(x)
-
 EvtMsgQ_t<EvtMsg_t, MAIN_EVT_Q_LEN> EvtQMain;
 extern CmdUart_t Uart;
 void ITask();
@@ -42,7 +39,7 @@ int main(void) {
     // ==== Init hardware ====
     EvtQMain.Init();
     Uart.Init(115200);
-    Printf("\r%S %S\r", APP_NAME, XSTR(BUILD_TIME));
+    Printf("\r%S %S\r", APP_NAME, XSTRINGIFY(BUILD_TIME));
     Clk.PrintFreqs();
 
     SimpleSensors::Init();
@@ -75,15 +72,46 @@ void ITask() {
     //Enable state machine
     Lume_state_machine_ctor();
     QMSM_INIT(the_lume_state_machine, (QEvt *)0);
-    LumeQEvt e;
-    //main cycle
     while(true) {
         EvtMsg_t Msg = EvtQMain.Fetch(TIME_INFINITE);
-        e.super.sig = Msg.ID;
-        e.Ptr = Msg.Ptr;
-        e.Value = Msg.Value;
-        QMSM_DISPATCH(the_lume_state_machine,  &(e.super));
+        Printf("%u\r", Msg.ID);
+        LumeQEvt e;
+        e.super.sig = 0;
+        switch(Msg.ID) {
+            case evtIdShellCmd:
+                e.super.sig = SHELL_COMMAND_SIG;
+                e.Ptr = Msg.Ptr;
+                break;
+
+            case evtIdEverySecond: e.super.sig = TICK_SEC_SIG; break;
+
+            case evtIdAdcRslt:
+                e.super.sig = LUM_CHANGED_SIG;
+                e.Value = Msg.Value;
+                break;
+
+            case evtIdButtons:
+                // Individual buttons
+                switch(Msg.BtnEvtInfo.BtnID) {
+                    case 0: e.super.sig = BTN_UP_SIG; break;
+                    case 1: e.super.sig = BTN_DOWN_SIG; break;
+                    case 2: e.super.sig = BTN_PLUS_SIG; break;
+                    case 3: e.super.sig = BTN_MINUS_SIG; break;
+                    default: break;
+                }
+                QMSM_DISPATCH(the_lume_state_machine, &(e.super));
+                // Common event
+                e.super.sig = BUTTON_PRESSED_SIG;
+                break;
+
+
+        } // switch
+
+//        e.super.sig = Msg.ID;
+//        e.Ptr = Msg.Ptr;
+//        e.Value = Msg.Value;
+        if(e.super.sig != 0) {
+            QMSM_DISPATCH(the_lume_state_machine,  &(e.super));
+        }
     }
 }
-
-

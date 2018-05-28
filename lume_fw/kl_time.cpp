@@ -37,7 +37,7 @@ void TimeCounter_t::Init() {
         // Let it start for a second
         systime_t StartTime = chVTGetSystemTimeX();
         while(true) {
-            if(Clk.LseIsOn()) {
+            if(Clk.IsLseOn()) {
                 Printf("32768 clk started\r");
                 Clk.SetLSELevel(lselvlLow); // Set Low power of crystal
                 Rtc::SetClkSrcLSE();    // Select LSE as RTC Clock Source
@@ -68,7 +68,7 @@ void TimeCounter_t::Init() {
                 Rtc::ExitInitMode();
                 if(!(RTC->CR & RTC_CR_BYPSHAD)) Rtc::WaitSync(); // Sync not required if shadow regs bypassed
                 Rtc::EnableWriteProtection();
-                BackupSpc::SetSetup();
+                SetSetup();
                 break;
             }
             else if(chVTTimeElapsedSinceX(StartTime) > MS2ST(999)) {
@@ -174,7 +174,7 @@ void TimeCounter_t::SetDateTime() {
     Rtc::ExitInitMode();
     if(!(RTC->CR & RTC_CR_BYPSHAD)) Rtc::WaitSync();
     Rtc::EnableWriteProtection();
-    BackupSpc::SetSetup();
+    SetSetup();
     chSysUnlock();
 }
 
@@ -185,7 +185,7 @@ CH_IRQ_HANDLER(Vector48) {
     EXTI->PR |= EXTI_PR_PR20;   // Clear exti flag
 //    PrintfI("RtcIrq\r");
     chSysLockFromISR();
-    EvtMsg_t Msg(TICK_SEC_SIG);
+    EvtMsg_t Msg(evtIdEverySecond);
     EvtQMain.SendNowOrExitI(Msg);
     chSysUnlockFromISR();
     CH_IRQ_EPILOGUE();

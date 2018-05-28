@@ -14,11 +14,11 @@
 #include <sys/cdefs.h>
 #include "EvtMsgIDs.h"
 
-/*
-Build time:
-Define symbol BUILD_TIME in main.cpp options with value "\"${current_date}\"".
-Maybe, to calm Eclipse, it will be required to write extra quote in the end: "\"${current_date}\"""
-*/
+// ==== Build time ====
+// Define symbol BUILD_TIME in main.cpp options with value ${current_date}.
+// Printf("\r%S %S\r", APP_NAME, XSTRINGIFY(BUILD_TIME));
+#define STRINGIFY(x)    # x
+#define XSTRINGIFY(x)   STRINGIFY(x)
 
 #if defined STM32L1XX
 #include "stm32l1xx.h"
@@ -375,6 +375,41 @@ static inline void WaitForSync() {
 // Waits until last write operation on RTC registers has finished.
 // This function must be called before any write to RTC registers.
 static inline void WaitForLastTask() { while((RTC->CRL & RTC_CRL_RTOFF) == 0); }
+
+static inline void SetPrescaler(uint32_t PrescalerValue) {
+    EnterConfigMode();
+    RTC->PRLH = (PrescalerValue & PRLH_MSB_MASK) >> 16;
+    RTC->PRLL = (PrescalerValue & RTC_LSB_MASK);
+    ExitConfigMode();
+}
+
+static inline void EnterConfigMode() { RTC->CRL |= RTC_CRL_CNF; }
+static inline void ExitConfigMode()  { RTC->CRL &= ~((uint16_t)RTC_CRL_CNF); }
+
+static inline void SetCounter(uint32_t CounterValue) {
+    EnterConfigMode();
+    RTC->CNTH = CounterValue >> 16;
+    RTC->CNTL = (CounterValue & RTC_LSB_MASK);
+    ExitConfigMode();
+}
+#elif defined STM32F072xB
+static inline void DisableWriteProtection() {
+    RTC->WPR = 0xCAU;
+    RTC->WPR = 0x53U;
+}
+static inline void EnableWriteProtection() { RTC->WPR = 0xFFU; }
+static inline void WaitSync() {
+    RTC->ISR &= ~RTC_ISR_RSF;   // Clear RSF reg
+    while(!BitIsSet(RTC->ISR, RTC_ISR_RSF));    // Wait RSF to become 1
+}
+
+static inline void EnterInitMode() {
+    RTC->ISR |= RTC_ISR_INIT;
+    while(!BitIsSet(RTC->ISR, RTC_ISR_INITF));
+}
+static inline void ExitInitMode() { RTC->ISR &= ~RTC_ISR_INIT; }
+
+static inline void ClearWakeupFlag() { RTC->ISR &= ~RTC_ISR_WUTF; }
 #endif
 
 static inline void SetClkSrcLSE() {
@@ -385,31 +420,17 @@ static inline void EnableClk() { RCC->BDCR |= RCC_BDCR_RTCEN; }
 
 #define RTC_LSB_MASK     ((uint32_t)0x0000FFFF)  // RTC LSB Mask
 #define PRLH_MSB_MASK    ((uint32_t)0x000F0000)  // RTC Prescaler MSB Mask
-static inline void EnterConfigMode() { RTC->CRL |= RTC_CRL_CNF; }
-static inline void ExitConfigMode()  { RTC->CRL &= ~((uint16_t)RTC_CRL_CNF); }
 
-static inline void SetPrescaler(uint32_t PrescalerValue) {
-    EnterConfigMode();
-    RTC->PRLH = (PrescalerValue & PRLH_MSB_MASK) >> 16;
-    RTC->PRLL = (PrescalerValue & RTC_LSB_MASK);
-    ExitConfigMode();
-}
 
-static inline void SetCounter(uint32_t CounterValue) {
-    EnterConfigMode();
-    RTC->CNTH = CounterValue >> 16;
-    RTC->CNTL = (CounterValue & RTC_LSB_MASK);
-    ExitConfigMode();
-}
+//static inline void EnableSecondIRQ() {
+//    WaitForLastTask();
+//    RTC->CRH |= RTC_CRH_SECIE;
+//}
+//static inline void ClearSecondIRQFlag() {
+//    RTC->CRL &= ~RTC_CRL_SECF;
+//}
+//#elif defined STM32F072xB
 
-static inline void EnableSecondIRQ() {
-    WaitForLastTask();
-    RTC->CRH |= RTC_CRH_SECIE;
-}
-static inline void ClearSecondIRQFlag() {
-    RTC->CRL &= ~RTC_CRL_SECF;
-}
-#endif
 } // namespace
 #endif
 

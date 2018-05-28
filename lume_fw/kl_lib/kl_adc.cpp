@@ -40,7 +40,7 @@ static void AdcThread(void *arg) {
                 uint32_t Vadc = Adc.GetResult(AdcChannels[i]);
                 uint32_t Vmv = Adc.Adc2mV(Vadc, VRef_adc);   // Resistor divider
 //                Printf("N=%u; Vadc=%u; Vmv=%u\r", i, Vadc, Vmv);
-                EvtMsg_t Msg(LUM_CHANGED_SIG, AdcChannels[i], Vmv);
+                EvtMsg_t Msg(evtIdAdcRslt, AdcChannels[i], Vmv);
                 EvtQMain.SendNowOrExit(Msg);
             } // for
         } // not first conv

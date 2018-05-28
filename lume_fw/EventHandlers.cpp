@@ -1,10 +1,5 @@
-/*
- * hypertime.cpp
- *
- *  Created on: 13 ????. 2017 ?.
- *      Author: juice
- */
 #include <EventHandlers.h>
+#include "lume_state_machine.h"
 #include "mirilli.h"
 #include "color.h"
 
@@ -15,7 +10,7 @@ Settings_t Settings;
 ColorHSV_t ClrH(144, 100, 100);
 ColorHSV_t ClrM(144, 100, 100);
 uint32_t CurrentLum = 0;
-TmrKL_t TmrMenu {MS2ST(9999), TIMEOUT_SIG, tktOneShot};
+TmrKL_t TmrMenu {MS2ST(9999), (EvtMsgId_t)TIMEOUT_SIG, tktOneShot};
 
 void Hypertime_t::ConvertFromTime() {
     // Hours
