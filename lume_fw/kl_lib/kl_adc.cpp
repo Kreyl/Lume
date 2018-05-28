@@ -7,7 +7,6 @@
 
 #include "kl_adc.h"
 #include "board.h"
-#include "lume_state_machine.h"
 #include "shell.h"
 #include "MsgQ.h"
 

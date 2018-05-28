@@ -1,4 +1,3 @@
-#include <EventHandlers.h>
 #include "hal.h"
 #include "MsgQ.h"
 #include "shell.h"
@@ -18,12 +17,29 @@
 // Forever
 EvtMsgQ_t<EvtMsg_t, MAIN_EVT_Q_LEN> EvtQMain;
 extern CmdUart_t Uart;
+void OnCmd(Shell_t *PShell);
 void ITask();
 
+#define TOP_BRIGHTNESS      99  // to fit in two-digit place
 
+Settings_t Settings;
 Interface_t Interface;
+State_t State = stIdle;
+bool DateTimeHasChanged = false;
 
+TmrKL_t TmrMenu {MS2ST(9999), evtIdMenuTimeout, tktOneShot};
 
+enum Btns_t {btnUp=0, btnDown=1, btnPlus=2, btnMinus=3};
+
+static Hypertime_t Hypertime;
+ColorHSV_t ClrH(144, 100, 100);
+ColorHSV_t ClrM(144, 100, 100);
+
+uint32_t CurrentLum = 0;
+
+static void MenuHandler(Btns_t Btn);
+static void EnterIdle();
+static void IndicateNewSecond();
 #endif
 
 int main(void) {
