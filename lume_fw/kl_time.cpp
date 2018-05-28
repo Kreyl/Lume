@@ -7,7 +7,6 @@
 
 #include "kl_time.h"
 #include "interface.h"
-#include "lume_state_machine.h"
 #include "MsgQ.h"
 
 TimeCounter_t Time;
