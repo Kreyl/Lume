@@ -7,9 +7,10 @@
 
 #include "kl_lib.h"
 #include "Mirilli.h"
-#include "ws2812b.h"
+//#include "ws2812b.h"
+#include "sk6812.h"
 
-IntelLeds_t Leds;
+Neopixel_t Leds;
 static thread_reference_t PThd = nullptr;
 
 // Target colors
@@ -20,7 +21,7 @@ static uint32_t ICalcDelayN(uint32_t n, uint32_t SmoothValue) {
     return Leds.ICurrentClr[n].DelayToNextAdj(ITargetClr[n], SmoothValue);
 }
 
-static THD_WORKING_AREA(waMirilli, 64);
+static THD_WORKING_AREA(waMirilli, 128);
 __noreturn
 static void MirilliThread(void *arg) {
     chRegSetThreadName("Mirilli");

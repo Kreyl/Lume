@@ -9,7 +9,6 @@
 #include "kl_time.h"
 #include "interface.h"
 #include "main.h"
-#include "ws2812b.h"
 #include "Mirilli.h"
 #include "kl_adc.h"
 
