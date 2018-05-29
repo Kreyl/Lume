@@ -1,14 +1,4 @@
-EESchema Schematic File Version 2
-LIBS:Connectors_kl
-LIBS:display_kl
-LIBS:pcb_details
-LIBS:power
-LIBS:Power_kl
-LIBS:st_kl
-LIBS:Tittar_kl
-LIBS:Switches
-LIBS:standard_logic
-LIBS:Transistors_kl
+EESchema Schematic File Version 4
 LIBS:lume-cache
 EELAYER 26 0
 EELAYER END
@@ -40,9 +30,9 @@ Wire Wire Line
 	5250 1700 5250 1900
 Connection ~ 5200 3650
 Wire Wire Line
-	5100 3650 6350 3650
+	5100 3650 5200 3650
 Wire Wire Line
-	6350 3450 4650 3450
+	6350 3450 4700 3450
 Wire Wire Line
 	5850 5350 5850 5550
 Wire Wire Line
@@ -50,13 +40,13 @@ Wire Wire Line
 Wire Wire Line
 	10250 4700 10250 4800
 Wire Wire Line
-	10250 3600 10250 4300
+	10250 3600 10250 4200
 Wire Wire Line
 	10250 3600 9600 3600
 Wire Wire Line
 	9650 4700 9650 4800
 Wire Wire Line
-	9650 3700 9650 4300
+	9650 3700 9650 4200
 Wire Wire Line
 	9650 3700 9600 3700
 Connection ~ 9650 4200
@@ -78,7 +68,7 @@ Connection ~ 7850 4350
 Wire Wire Line
 	7850 4250 7850 4350
 Wire Wire Line
-	7550 4250 7550 4500
+	7550 4250 7550 4350
 Wire Wire Line
 	5450 4400 5450 4500
 Wire Wire Line
@@ -95,7 +85,7 @@ Connection ~ 4950 3550
 Wire Wire Line
 	4950 4400 4950 4500
 Wire Wire Line
-	7550 4350 8000 4350
+	7550 4350 7650 4350
 Wire Wire Line
 	8000 4350 8000 4250
 Connection ~ 7550 4350
@@ -108,7 +98,7 @@ Wire Wire Line
 	6300 4000 6300 3950
 Connection ~ 6300 3950
 Wire Wire Line
-	6250 3950 6350 3950
+	6250 3950 6300 3950
 Wire Wire Line
 	5250 1700 4800 1700
 Wire Wire Line
@@ -122,7 +112,7 @@ Wire Wire Line
 Wire Wire Line
 	5200 3650 5200 4000
 Wire Wire Line
-	6350 3550 4900 3550
+	6350 3550 4950 3550
 Wire Wire Line
 	4800 2300 5250 2300
 Wire Wire Line
@@ -137,11 +127,11 @@ Wire Wire Line
 	1750 4200 1950 4200
 Connection ~ 1800 3900
 Wire Wire Line
-	1800 3900 2700 3900
+	1800 3900 2500 3900
 Wire Wire Line
 	1750 3950 1800 3950
 Wire Wire Line
-	1800 3950 1800 3850
+	1800 3950 1800 3900
 Wire Wire Line
 	1800 3850 1750 3850
 Wire Wire Line
@@ -167,12 +157,12 @@ Wire Wire Line
 Wire Wire Line
 	13350 8850 13450 8850
 Wire Wire Line
-	13450 8850 13450 9750
+	13450 8850 13450 9100
 Wire Wire Line
 	13350 9350 13450 9350
 Connection ~ 13450 9350
 $Comp
-L GND #PWR02
+L lume-rescue:GND #PWR02
 U 1 1 505F47D3
 P 13450 9750
 F 0 "#PWR02" H 13540 9730 30  0001 C CNN
@@ -187,7 +177,7 @@ Battery 4.5V\n(3xAA)
 Text Notes 11350 1300 0    60   ~ 0
 Luminocity\nsensor
 $Comp
-L +5V #PWR06
+L lume-rescue:+5V #PWR06
 U 1 1 505F2DBE
 P 9500 9950
 F 0 "#PWR06" H 9500 9910 30  0001 C CNN
@@ -198,7 +188,7 @@ F 3 "" H 9500 9950 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L GND #PWR07
+L lume-rescue:GND #PWR07
 U 1 1 505F2DA2
 P 8600 10300
 F 0 "#PWR07" H 8690 10280 30  0001 C CNN
@@ -209,7 +199,7 @@ F 3 "" H 8600 10300 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L CONN_2 XL8
+L lume-rescue:CONN_2 XL8
 U 1 1 505F2D90
 P 8400 10050
 F 0 "XL8" V 8350 10050 40  0000 C CNN
@@ -240,7 +230,7 @@ LCD_SCLK
 Text Label 2550 4200 0    60   ~ 0
 LCD_BCKLT
 $Comp
-L GND #PWR08
+L lume-rescue:GND #PWR08
 U 1 1 505F2C94
 P 1800 4050
 F 0 "#PWR08" H 1890 4030 30  0001 C CNN
@@ -253,7 +243,7 @@ $EndComp
 Text Notes 850  3900 0    60   ~ 0
 LCD
 $Comp
-L GND #PWR010
+L lume-rescue:GND #PWR010
 U 1 1 505F2C92
 P 1800 4300
 F 0 "#PWR010" H 1890 4280 30  0001 C CNN
@@ -264,7 +254,7 @@ F 3 "" H 1800 4300 60  0001 C CNN
 	0    -1   -1   0   
 $EndComp
 $Comp
-L CONN_NOKIA_LCD XL3
+L lume-rescue:CONN_NOKIA_LCD XL3
 U 1 1 505F2C91
 P 1450 3700
 F 0 "XL3" V 1150 3900 60  0000 C CNN
@@ -276,7 +266,7 @@ F 3 "" H 1450 3700 60  0001 C CNN
 $EndComp
 NoConn ~ 6350 2500
 $Comp
-L GND #PWR043
+L lume-rescue:GND #PWR043
 U 1 1 5047744F
 P 5200 4500
 F 0 "#PWR043" H 5290 4480 30  0001 C CNN
@@ -287,7 +277,7 @@ F 3 "" H 5200 4500 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L GND #PWR044
+L lume-rescue:GND #PWR044
 U 1 1 50470C0B
 P 5850 5550
 F 0 "#PWR044" H 5940 5530 30  0001 C CNN
@@ -300,7 +290,7 @@ $EndComp
 Text Notes 6250 8550 0    60   ~ 0
 Power
 $Comp
-L CRYSTAL_H XTAL1
+L lume-rescue:CRYSTAL_H XTAL1
 U 1 1 4FFDDE7A
 P 9950 4200
 F 0 "XTAL1" H 9950 4450 60  0000 C CNN
@@ -311,7 +301,7 @@ F 3 "" H 9950 4200 60  0001 C CNN
 	-1   0    0    -1  
 $EndComp
 $Comp
-L GND #PWR051
+L lume-rescue:GND #PWR051
 U 1 1 4FFDDE77
 P 9650 4800
 F 0 "#PWR051" H 9740 4780 30  0001 C CNN
@@ -322,7 +312,7 @@ F 3 "" H 9650 4800 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L GND #PWR052
+L lume-rescue:GND #PWR052
 U 1 1 4FFDDE76
 P 10250 4800
 F 0 "#PWR052" H 10340 4780 30  0001 C CNN
@@ -333,7 +323,7 @@ F 3 "" H 10250 4800 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L GND #PWR053
+L lume-rescue:GND #PWR053
 U 1 1 4FFDDE75
 P 9950 4800
 F 0 "#PWR053" H 10040 4780 30  0001 C CNN
@@ -350,7 +340,7 @@ Btn2
 Text Label 4900 1700 0    60   ~ 0
 Btn1
 $Comp
-L GND #PWR054
+L lume-rescue:GND #PWR054
 U 1 1 4FCBDAD8
 P 4100 2300
 F 0 "#PWR054" H 4190 2280 30  0001 C CNN
@@ -361,7 +351,7 @@ F 3 "" H 4100 2300 60  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L GND #PWR055
+L lume-rescue:GND #PWR055
 U 1 1 4FCBDAD1
 P 4100 2000
 F 0 "#PWR055" H 4190 1980 30  0001 C CNN
@@ -372,7 +362,7 @@ F 3 "" H 4100 2000 60  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L +3.3V #PWR056
+L lume-rescue:+3.3V #PWR056
 U 1 1 4F80002F
 P 6250 3950
 F 0 "#PWR056" H 6250 3910 30  0001 C CNN
@@ -383,7 +373,7 @@ F 3 "" H 6250 3950 60  0001 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L +3.3V #PWR057
+L lume-rescue:+3.3V #PWR057
 U 1 1 4F800027
 P 5100 3650
 F 0 "#PWR057" H 5100 3610 30  0001 C CNN
@@ -394,7 +384,7 @@ F 3 "" H 5100 3650 60  0001 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L +3.3V #PWR058
+L lume-rescue:+3.3V #PWR058
 U 1 1 4F800021
 P 4900 3550
 F 0 "#PWR058" H 4900 3510 30  0001 C CNN
@@ -405,7 +395,7 @@ F 3 "" H 4900 3550 60  0001 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L +3.3V #PWR059
+L lume-rescue:+3.3V #PWR059
 U 1 1 4F800018
 P 4650 3450
 F 0 "#PWR059" H 4650 3410 30  0001 C CNN
@@ -416,7 +406,7 @@ F 3 "" H 4650 3450 60  0001 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L GND #PWR060
+L lume-rescue:GND #PWR060
 U 1 1 4F7FFE7D
 P 4100 1700
 F 0 "#PWR060" H 4190 1680 30  0001 C CNN
@@ -427,7 +417,7 @@ F 3 "" H 4100 1700 60  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L GND #PWR061
+L lume-rescue:GND #PWR061
 U 1 1 4F7C7519
 P 7550 4500
 F 0 "#PWR061" H 7550 4500 30  0001 C CNN
@@ -438,7 +428,7 @@ F 3 "" H 7550 4500 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L GND #PWR062
+L lume-rescue:GND #PWR062
 U 1 1 4F7C7517
 P 4700 4500
 F 0 "#PWR062" H 4790 4480 30  0001 C CNN
@@ -449,7 +439,7 @@ F 3 "" H 4700 4500 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L GND #PWR063
+L lume-rescue:GND #PWR063
 U 1 1 4F7C7516
 P 4950 4500
 F 0 "#PWR063" H 5040 4480 30  0001 C CNN
@@ -460,7 +450,7 @@ F 3 "" H 4950 4500 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L GND #PWR064
+L lume-rescue:GND #PWR064
 U 1 1 4F7C7515
 P 5450 4500
 F 0 "#PWR064" H 5540 4480 30  0001 C CNN
@@ -472,7 +462,7 @@ F 3 "" H 5450 4500 60  0001 C CNN
 $EndComp
 NoConn ~ 6350 3300
 $Comp
-L GND #PWR066
+L lume-rescue:GND #PWR066
 U 1 1 4F7C7508
 P 6300 4500
 F 0 "#PWR066" H 6390 4480 30  0001 C CNN
@@ -483,7 +473,7 @@ F 3 "" H 6300 4500 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L STM32F072CxTx DD1
+L lume-rescue:STM32F072CxTx DD1
 U 1 1 59A15767
 P 7800 2800
 F 0 "DD1" H 7975 4287 60  0000 C CNN
@@ -498,7 +488,7 @@ F 7 "48" H 7700 4550 60  0001 C CNN "SolderPoints"
 	1    0    0    -1  
 $EndComp
 $Comp
-L BUTTON SW1
+L lume-rescue:BUTTON SW1
 U 1 1 59A1607C
 P 4500 1700
 F 0 "SW1" H 4500 1955 50  0000 C CNN
@@ -511,7 +501,7 @@ F 5 "4" H 4500 2050 60  0001 C CNN "SolderPoints"
 	1    0    0    -1  
 $EndComp
 $Comp
-L BUTTON SW2
+L lume-rescue:BUTTON SW2
 U 1 1 59A1618C
 P 4500 2000
 F 0 "SW2" H 4500 2255 50  0000 C CNN
@@ -524,7 +514,7 @@ F 5 "4" H 4500 2350 60  0001 C CNN "SolderPoints"
 	1    0    0    -1  
 $EndComp
 $Comp
-L BUTTON SW3
+L lume-rescue:BUTTON SW3
 U 1 1 59A161FB
 P 4500 2300
 F 0 "SW3" H 4500 2555 50  0000 C CNN
@@ -537,7 +527,7 @@ F 5 "4" H 4500 2650 60  0001 C CNN "SolderPoints"
 	1    0    0    -1  
 $EndComp
 $Comp
-L C C3
+L lume-rescue:C C3
 U 1 1 59A1679F
 P 4700 4200
 F 0 "C3" H 4600 4300 50  0000 L CNN
@@ -550,7 +540,7 @@ F 5 "2" H 4800 4300 60  0001 C CNN "SolderPoints"
 	1    0    0    -1  
 $EndComp
 $Comp
-L C C4
+L lume-rescue:C C4
 U 1 1 59A1692F
 P 4950 4200
 F 0 "C4" H 4850 4300 50  0000 L CNN
@@ -563,7 +553,7 @@ F 5 "2" H 5050 4300 60  0001 C CNN "SolderPoints"
 	1    0    0    -1  
 $EndComp
 $Comp
-L C C6
+L lume-rescue:C C6
 U 1 1 59A169A3
 P 5200 4200
 F 0 "C6" H 5100 4300 50  0000 L CNN
@@ -576,7 +566,7 @@ F 5 "2" H 5300 4300 60  0001 C CNN "SolderPoints"
 	1    0    0    -1  
 $EndComp
 $Comp
-L C C7
+L lume-rescue:C C7
 U 1 1 59A169AB
 P 5450 4200
 F 0 "C7" H 5350 4300 50  0000 L CNN
@@ -589,7 +579,7 @@ F 5 "2" H 5550 4300 60  0001 C CNN "SolderPoints"
 	1    0    0    -1  
 $EndComp
 $Comp
-L C C8
+L lume-rescue:C C8
 U 1 1 59A16A65
 P 6300 4200
 F 0 "C8" H 6200 4300 50  0000 L CNN
@@ -602,7 +592,7 @@ F 5 "2" H 6400 4300 60  0001 C CNN "SolderPoints"
 	1    0    0    -1  
 $EndComp
 $Comp
-L BAT B1
+L lume-rescue:BAT B1
 U 1 1 59A16C5D
 P 5850 5100
 F 0 "B1" H 6078 5128 60  0000 L CNN
@@ -613,7 +603,7 @@ F 3 "" H 5850 5100 60  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L C C9
+L lume-rescue:C C9
 U 1 1 59A17591
 P 9650 4500
 F 0 "C9" H 9550 4600 50  0000 L CNN
@@ -626,7 +616,7 @@ F 5 "2" H 9750 4600 60  0001 C CNN "SolderPoints"
 	1    0    0    -1  
 $EndComp
 $Comp
-L C C10
+L lume-rescue:C C10
 U 1 1 59A177C8
 P 10250 4500
 F 0 "C10" H 10150 4600 50  0000 L CNN
@@ -639,7 +629,7 @@ F 5 "2" H 10350 4600 60  0001 C CNN "SolderPoints"
 	1    0    0    -1  
 $EndComp
 $Comp
-L HOLE_METALLED HOLE1
+L lume-rescue:HOLE_METALLED HOLE1
 U 1 1 59A1814B
 P 13050 8850
 F 0 "HOLE1" H 12700 8900 60  0000 C CNN
@@ -654,7 +644,7 @@ $EndComp
 Text Notes 1200 1250 0    60   ~ 0
 Programming & debug
 $Comp
-L GND #PWR011
+L lume-rescue:GND #PWR011
 U 1 1 59A04C82
 P 2100 1750
 F 0 "#PWR011" H 2190 1730 30  0001 C CNN
@@ -673,7 +663,7 @@ UART_TX
 Text Label 1800 2050 0    60   ~ 0
 UART_RX
 $Comp
-L CONN_6 XL2
+L lume-rescue:CONN_6 XL2
 U 1 1 59A04C8D
 P 1350 1800
 F 0 "XL2" V 1300 1800 50  0000 C CNN
@@ -701,7 +691,7 @@ WS_CTRL
 Wire Wire Line
 	5900 3100 6350 3100
 $Comp
-L +5V #PWR029
+L lume-rescue:+5V #PWR029
 U 1 1 59A05946
 P 14300 3700
 F 0 "#PWR029" H 14300 3660 30  0001 C CNN
@@ -718,13 +708,13 @@ Wire Wire Line
 Text Label 12050 3800 0    60   ~ 0
 WS_CTRL
 Wire Wire Line
-	12050 3800 12700 3800
+	12050 3800 12500 3800
 Wire Wire Line
 	13700 3800 14500 3800
 Wire Wire Line
 	13700 4100 13700 3950
 $Comp
-L +5V #PWR025
+L lume-rescue:+5V #PWR025
 U 1 1 59A05960
 P 12500 3950
 F 0 "#PWR025" H 12500 3910 30  0001 C CNN
@@ -735,9 +725,9 @@ F 3 "" H 12500 3950 60  0000 C CNN
 	-1   0    0    -1  
 $EndComp
 Wire Wire Line
-	12500 3950 12700 3950
+	12500 3950 12600 3950
 $Comp
-L MC74VHC1 DA3
+L lume-rescue:MC74VHC1 DA3
 U 1 1 59A0597D
 P 13150 3800
 F 0 "DA3" H 12925 4050 60  0000 C CNN
@@ -754,7 +744,7 @@ $EndComp
 Wire Wire Line
 	12600 4450 12600 4550
 $Comp
-L C C14
+L lume-rescue:C C14
 U 1 1 59A05985
 P 12600 4250
 F 0 "C14" H 12500 4150 50  0000 L CNN
@@ -768,7 +758,7 @@ Wire Wire Line
 	12600 4050 12600 3950
 Connection ~ 12600 3950
 $Comp
-L GND #PWR027
+L lume-rescue:GND #PWR027
 U 1 1 59A05C71
 P 12700 3550
 F 0 "#PWR027" H 12790 3530 30  0001 C CNN
@@ -779,7 +769,7 @@ F 3 "" H 12700 3550 60  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L GND #PWR028
+L lume-rescue:GND #PWR028
 U 1 1 59A05CD3
 P 13700 4100
 F 0 "#PWR028" H 13790 4080 30  0001 C CNN
@@ -792,7 +782,7 @@ $EndComp
 Wire Wire Line
 	12700 3650 12700 3550
 $Comp
-L GND #PWR026
+L lume-rescue:GND #PWR026
 U 1 1 59A06031
 P 12600 4550
 F 0 "#PWR026" H 12690 4530 30  0001 C CNN
@@ -803,7 +793,7 @@ F 3 "" H 12600 4550 60  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L GND #PWR030
+L lume-rescue:GND #PWR030
 U 1 1 59A0652D
 P 14500 4100
 F 0 "#PWR030" H 14590 4080 30  0001 C CNN
@@ -814,7 +804,7 @@ F 3 "" H 14500 4100 60  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L TESTPOINT TP2
+L lume-rescue:TESTPOINT TP2
 U 1 1 59A06562
 P 12450 3550
 F 0 "TP2" H 12406 3656 60  0000 C CNN
@@ -832,7 +822,7 @@ Wire Wire Line
 	12500 3550 12500 3800
 Connection ~ 12500 3800
 $Comp
-L Logo Logo1
+L lume-rescue:Logo Logo1
 U 1 1 59A09085
 P 14550 9250
 F 0 "Logo1" H 14450 9700 60  0000 C CNN
@@ -859,7 +849,7 @@ Wire Wire Line
 Wire Wire Line
 	9700 3000 9600 3000
 $Comp
-L GND #PWR023
+L lume-rescue:GND #PWR023
 U 1 1 59A0B58D
 P 11250 2400
 F 0 "#PWR023" H 11340 2380 30  0001 C CNN
@@ -870,7 +860,7 @@ F 3 "" H 11250 2400 60  0001 C CNN
 	-1   0    0    -1  
 $EndComp
 $Comp
-L GND #PWR021
+L lume-rescue:GND #PWR021
 U 1 1 59A0B593
 P 11000 2400
 F 0 "#PWR021" H 11090 2380 30  0001 C CNN
@@ -881,7 +871,7 @@ F 3 "" H 11000 2400 60  0001 C CNN
 	-1   0    0    -1  
 $EndComp
 $Comp
-L +3.3V #PWR024
+L lume-rescue:+3.3V #PWR024
 U 1 1 59A0B599
 P 12250 1700
 F 0 "#PWR024" H 12250 1660 30  0001 C CNN
@@ -892,7 +882,7 @@ F 3 "" H 12250 1700 60  0001 C CNN
 	1    0    0    1   
 $EndComp
 $Comp
-L Phototransistor Q1
+L lume-rescue:Phototransistor Q1
 U 1 1 59A0B59F
 P 11600 1750
 F 0 "Q1" V 11800 1800 60  0000 C CNN
@@ -915,7 +905,7 @@ Wire Wire Line
 Wire Wire Line
 	11800 1700 12250 1700
 $Comp
-L C C13
+L lume-rescue:C C13
 U 1 1 59A0B5AF
 P 11250 2050
 F 0 "C13" H 11150 1950 50  0000 L CNN
@@ -926,7 +916,7 @@ F 3 "" H 11250 2050 60  0001 C CNN
 	-1   0    0    -1  
 $EndComp
 $Comp
-L R R2
+L lume-rescue:R R2
 U 1 1 59A0B5B8
 P 11000 2050
 F 0 "R2" H 11069 2096 50  0000 L CNN
@@ -941,11 +931,11 @@ $EndComp
 Text Label 9800 1700 0    60   ~ 0
 LUM_MEAS
 Wire Wire Line
-	11400 1700 9600 1700
+	11400 1700 11250 1700
 Wire Wire Line
 	4200 2600 4100 2600
 $Comp
-L GND #PWR014
+L lume-rescue:GND #PWR014
 U 1 1 59A0C3B4
 P 4100 2600
 F 0 "#PWR014" H 4190 2580 30  0001 C CNN
@@ -956,7 +946,7 @@ F 3 "" H 4100 2600 60  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L BUTTON SW4
+L lume-rescue:BUTTON SW4
 U 1 1 59A0C3BC
 P 4500 2600
 F 0 "SW4" H 4500 2855 50  0000 C CNN
@@ -977,7 +967,7 @@ Wire Wire Line
 Text Label 4900 2600 0    60   ~ 0
 Btn4
 $Comp
-L GND #PWR01
+L lume-rescue:GND #PWR01
 U 1 1 59A0DA83
 P 1650 8900
 F 0 "#PWR01" H 1740 8880 30  0001 C CNN
@@ -988,7 +978,7 @@ F 3 "" H 1650 8900 60  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L GND #PWR03
+L lume-rescue:GND #PWR03
 U 1 1 59A0DA89
 P 1650 10000
 F 0 "#PWR03" H 1740 9980 30  0001 C CNN
@@ -999,7 +989,7 @@ F 3 "" H 1650 10000 60  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L +5V #PWR04
+L lume-rescue:+5V #PWR04
 U 1 1 59A0DA8F
 P 1850 9500
 F 0 "#PWR04" H 1850 9460 30  0001 C CNN
@@ -1010,7 +1000,7 @@ F 3 "" H 1850 9500 60  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L C C1
+L lume-rescue:C C1
 U 1 1 59A0DA95
 P 1650 9200
 F 0 "C1" H 1550 9100 50  0000 L CNN
@@ -1021,7 +1011,7 @@ F 3 "" H 1650 9200 60  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L USB_MINI_B XL1
+L lume-rescue:USB_MINI_B XL1
 U 1 1 59A0DA9C
 P 1300 9700
 F 0 "XL1" H 1201 10187 60  0000 C CNN
@@ -1038,7 +1028,7 @@ D+
 Wire Wire Line
 	1500 9800 1650 9800
 Wire Wire Line
-	1650 9800 1650 10000
+	1650 9800 1650 9900
 Connection ~ 1650 9900
 Wire Wire Line
 	1650 9400 1650 9500
@@ -1052,7 +1042,7 @@ Wire Wire Line
 Wire Wire Line
 	1500 9600 1600 9600
 Wire Wire Line
-	1500 9500 1850 9500
+	1500 9500 1650 9500
 NoConn ~ 950  10200
 NoConn ~ 1050 10200
 NoConn ~ 1150 10200
@@ -1066,7 +1056,7 @@ Wire Wire Line
 Wire Wire Line
 	9600 2700 9700 2700
 $Comp
-L C C2
+L lume-rescue:C C2
 U 1 1 59A0FD56
 P 3700 9600
 F 0 "C2" H 3750 9700 50  0000 L CNN
@@ -1077,7 +1067,7 @@ F 3 "" H 3700 9600 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L GND #PWR013
+L lume-rescue:GND #PWR013
 U 1 1 59A0FD5D
 P 3700 9900
 F 0 "#PWR013" H 3790 9880 30  0001 C CNN
@@ -1088,7 +1078,7 @@ F 3 "" H 3700 9900 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L GND #PWR017
+L lume-rescue:GND #PWR017
 U 1 1 59A0FD63
 P 5150 9900
 F 0 "#PWR017" H 5240 9880 30  0001 C CNN
@@ -1099,7 +1089,7 @@ F 3 "" H 5150 9900 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L C C5
+L lume-rescue:C C5
 U 1 1 59A0FD69
 P 5150 9600
 F 0 "C5" H 5200 9700 50  0000 L CNN
@@ -1110,7 +1100,7 @@ F 3 "" H 5150 9600 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L +3.3V #PWR018
+L lume-rescue:+3.3V #PWR018
 U 1 1 59A0FD70
 P 5500 9350
 F 0 "#PWR018" H 5500 9310 30  0001 C CNN
@@ -1129,13 +1119,13 @@ Connection ~ 3700 9350
 Wire Wire Line
 	3700 9800 3700 9900
 Wire Wire Line
-	4850 9350 5500 9350
+	4850 9350 4950 9350
 Wire Wire Line
-	3550 9350 4050 9350
+	3550 9350 3700 9350
 Wire Wire Line
 	3700 9400 3700 9350
 $Comp
-L MCP1700 DA2
+L lume-rescue:MCP1700 DA2
 U 1 1 59A0FD98
 P 4450 10450
 F 0 "DA2" H 4475 10887 60  0000 C CNN
@@ -1149,7 +1139,7 @@ F 6 "MCP1700T-3302E/TT" H 4900 11050 60  0001 C CNN "PN"
 	1    0    0    -1  
 $EndComp
 $Comp
-L GND #PWR015
+L lume-rescue:GND #PWR015
 U 1 1 59A0FDA2
 P 4450 11000
 F 0 "#PWR015" H 4540 10980 30  0001 C CNN
@@ -1162,7 +1152,7 @@ $EndComp
 Wire Wire Line
 	4450 10900 4450 11000
 $Comp
-L D_Shottky D1
+L lume-rescue:D_Shottky D1
 U 1 1 59A10051
 P 9050 9950
 F 0 "D1" H 9050 10142 40  0000 C CNN
@@ -1175,7 +1165,7 @@ F 5 "2" H 9250 10250 60  0001 C CNN "SolderPoints"
 	1    0    0    -1  
 $EndComp
 $Comp
-L +5V #PWR012
+L lume-rescue:+5V #PWR012
 U 1 1 59A1050C
 P 3550 9350
 F 0 "#PWR012" H 3550 9310 30  0001 C CNN
@@ -1192,7 +1182,7 @@ Wire Notes Line
 Wire Notes Line
 	10550 8400 10550 11200
 $Comp
-L HOLE_METALLED HOLE2
+L lume-rescue:HOLE_METALLED HOLE2
 U 1 1 59A10F5A
 P 13050 9100
 F 0 "HOLE2" H 12700 9150 60  0000 C CNN
@@ -1205,7 +1195,7 @@ F 5 "0" H 12750 9250 60  0001 C CNN "SolderPoints"
 	1    0    0    -1  
 $EndComp
 $Comp
-L HOLE_METALLED HOLE3
+L lume-rescue:HOLE_METALLED HOLE3
 U 1 1 59A10FE4
 P 13050 9350
 F 0 "HOLE3" H 12700 9400 60  0000 C CNN
@@ -1218,7 +1208,7 @@ F 5 "0" H 12750 9500 60  0001 C CNN "SolderPoints"
 	1    0    0    -1  
 $EndComp
 $Comp
-L HOLE_METALLED HOLE4
+L lume-rescue:HOLE_METALLED HOLE4
 U 1 1 59A10FEC
 P 13050 9600
 F 0 "HOLE4" H 12700 9650 60  0000 C CNN
@@ -1244,7 +1234,7 @@ NoConn ~ 9600 2000
 NoConn ~ 9600 2100
 NoConn ~ 9600 2300
 $Comp
-L TESTPOINT TP1
+L lume-rescue:TESTPOINT TP1
 U 1 1 59A13BFB
 P 10250 2400
 F 0 "TP1" H 10206 2506 60  0000 C CNN
@@ -1261,7 +1251,7 @@ Wire Wire Line
 Text Label 9700 2400 0    60   ~ 0
 MCO
 $Comp
-L +3.3V #PWR05
+L lume-rescue:+3.3V #PWR05
 U 1 1 59A055B5
 P 2000 1550
 F 0 "#PWR05" H 2000 1510 30  0001 C CNN
@@ -1272,7 +1262,7 @@ F 3 "" H 2000 1550 60  0001 C CNN
 	1    0    0    1   
 $EndComp
 $Comp
-L R R3
+L lume-rescue:R R3
 U 1 1 59A06914
 P 2200 4200
 F 0 "R3" V 2100 4200 50  0000 C CNN
@@ -1292,7 +1282,7 @@ Connection ~ 4950 9350
 Wire Wire Line
 	4950 10300 4950 9350
 $Comp
-L GND #PWR016
+L lume-rescue:GND #PWR016
 U 1 1 59A0FD7D
 P 4850 9900
 F 0 "#PWR016" H 4940 9880 30  0001 C CNN
@@ -1307,11 +1297,11 @@ Wire Wire Line
 Connection ~ 4000 9350
 Connection ~ 4000 9550
 Wire Wire Line
-	4000 9350 4000 10300
+	4000 9350 4000 9550
 Wire Wire Line
 	4000 9550 4050 9550
 $Comp
-L NCP583SQ DA1
+L lume-rescue:NCP583SQ DA1
 U 1 1 59A0FD76
 P 4450 9450
 F 0 "DA1" H 4300 9800 60  0000 C CNN
@@ -1322,7 +1312,7 @@ F 3 "~" H 4450 9450 60  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L CONN_3 XL4
+L lume-rescue:CONN_3 XL4
 U 1 1 59A0593F
 P 14700 3800
 F 0 "XL4" V 14650 3800 40  0000 C CNN
@@ -1345,7 +1335,7 @@ Wire Wire Line
 Wire Wire Line
 	2500 3350 2500 3250
 $Comp
-L GND #PWR09
+L lume-rescue:GND #PWR09
 U 1 1 59C0368E
 P 2500 3250
 F 0 "#PWR09" H 2590 3230 30  0001 C CNN
@@ -1356,7 +1346,7 @@ F 3 "" H 2500 3250 60  0001 C CNN
 	1    0    0    1   
 $EndComp
 $Comp
-L C C11
+L lume-rescue:C C11
 U 1 1 59C03696
 P 2500 3550
 F 0 "C11" H 2400 3650 50  0000 L CNN
@@ -1371,4 +1361,58 @@ $EndComp
 Wire Wire Line
 	2500 3750 2500 3900
 Connection ~ 2500 3900
+Wire Wire Line
+	13450 9600 13450 9750
+Wire Wire Line
+	13450 9100 13450 9350
+Wire Wire Line
+	5200 3650 5450 3650
+Wire Wire Line
+	9650 4200 9650 4300
+Wire Wire Line
+	10250 4200 10250 4300
+Wire Wire Line
+	7650 4350 7750 4350
+Wire Wire Line
+	7850 4350 8000 4350
+Wire Wire Line
+	5450 3650 6350 3650
+Wire Wire Line
+	4700 3450 4650 3450
+Wire Wire Line
+	4950 3550 4900 3550
+Wire Wire Line
+	7550 4350 7550 4500
+Wire Wire Line
+	7750 4350 7850 4350
+Wire Wire Line
+	6300 3950 6350 3950
+Wire Wire Line
+	1800 3900 1800 3850
+Wire Wire Line
+	13450 9350 13450 9600
+Wire Wire Line
+	12600 3950 12700 3950
+Wire Wire Line
+	12500 3800 12700 3800
+Wire Wire Line
+	11250 1700 11000 1700
+Wire Wire Line
+	11000 1700 9600 1700
+Wire Wire Line
+	1650 9900 1650 10000
+Wire Wire Line
+	1650 9500 1850 9500
+Wire Wire Line
+	5150 9350 5500 9350
+Wire Wire Line
+	3700 9350 4000 9350
+Wire Wire Line
+	4950 9350 5150 9350
+Wire Wire Line
+	4000 9350 4050 9350
+Wire Wire Line
+	4000 9550 4000 10300
+Wire Wire Line
+	2500 3900 2700 3900
 $EndSCHEMATC

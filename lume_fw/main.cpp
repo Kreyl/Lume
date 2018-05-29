@@ -114,7 +114,7 @@ void ITask() {
                 break;
 
             case evtIdAdcRslt: {
-                CurrentLum = Msg.Value / 2;
+                CurrentLum = Msg.Value / 10;
                 if(CurrentLum > 99) CurrentLum = 99;
 //                Printf("Lum: %u\r", Msg.Value);
                 Interface.DisplayLum(CurrentLum);
@@ -214,8 +214,10 @@ void MenuHandler(Btns_t Btn) {
                     Interface.DisplayDateTime();
                     break;
                 case btnUp:
-                    State = stClrM;
-                    Interface.DisplayClrM();
+//                    State = stClrM;
+//                    Interface.DisplayClrM();
+                    State = stBrtLo;
+                    Interface.DisplayBrtLo();
                     break;
                 default: break; // do not react on +-
             }
@@ -326,10 +328,11 @@ void MenuHandler(Btns_t Btn) {
 
         case stBrtLo:
             switch(Btn) {
-                case btnDown:
-                    State = stClrH;
-                    Interface.DisplayClrH();
-                    break;
+//                case btnDown:
+//                    State = stClrH;
+//                    Interface.DisplayClrH();
+//                    break;
+                case btnDown: EnterIdle(); break;
                 case btnUp:
                     State = stBrtHi;
                     Interface.DisplayBrtHi();
@@ -408,8 +411,8 @@ void EnterIdle() {
     Interface.DisplayThreshold();
     Interface.DisplayBrtHi();
     Interface.DisplayBrtLo();
-    Interface.DisplayClrH();
-    Interface.DisplayClrM();
+//    Interface.DisplayClrH();
+//    Interface.DisplayClrM();
     Lcd.Backlight(0);
     // Save settings
     RTC->BKP1R = Settings.R1;

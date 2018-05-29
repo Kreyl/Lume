@@ -20,8 +20,8 @@ public:
         Lcd.Printf(0, 3, "ѕорог осв-ти: 00");
         Lcd.Printf(0, 4, "яркость выше: 00");
         Lcd.Printf(0, 5, "яркость ниже: 00");
-        Lcd.Printf(0, 6, "÷вет часов: 000");
-        Lcd.Printf(0, 7, "÷вет минут: 000");
+//        Lcd.Printf(0, 6, "÷вет часов: 000");
+//        Lcd.Printf(0, 7, "÷вет минут: 000");
     }
 
     void DisplayDateTime() {
@@ -55,14 +55,14 @@ public:
         else Lcd.Printf(14, 5, "%02u", Settings.BrtLo);
     }
 
-    void DisplayClrH() {
-        if(State == stClrH) Lcd.PrintfInverted(12, 6, "%03u", Settings.ClrIdH);
-        else Lcd.Printf(12, 6, "%03u", Settings.ClrIdH);
-    }
-    void DisplayClrM() {
-        if(State == stClrM) Lcd.PrintfInverted(12, 7, "%03u", Settings.ClrIdM);
-        else Lcd.Printf(12, 7, "%03u", Settings.ClrIdM);
-    }
+//    void DisplayClrH() {
+//        if(State == stClrH) Lcd.PrintfInverted(12, 6, "%03u", Settings.ClrIdH);
+//        else Lcd.Printf(12, 6, "%03u", Settings.ClrIdH);
+//    }
+//    void DisplayClrM() {
+//        if(State == stClrM) Lcd.PrintfInverted(12, 7, "%03u", Settings.ClrIdM);
+//        else Lcd.Printf(12, 7, "%03u", Settings.ClrIdM);
+//    }
 
     void Error(const char* msg) { Lcd.PrintfInverted(0, 0, "%S", msg); }
 };
