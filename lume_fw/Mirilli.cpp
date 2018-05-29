@@ -50,23 +50,15 @@ void InitMirilli() {
     chThdCreateStatic(waMirilli, sizeof(waMirilli), HIGHPRIO, (tfunc_t)MirilliThread, NULL);
 }
 
-void SetTargetClrH(uint32_t H, ColorHSV_t Clr) {
+void SetTargetClrH(uint32_t H, Color_t Clr) {
     if(H >= MIRILLI_H_CNT) return;
     uint32_t Indx = H2LedN[H];
-//    Printf("H=%u; Indx=%u\r", H, Indx);
-    ITargetClr[Indx] = Clr.ToRGB();
-    // Special case
-#ifdef SECOND_0_LED_INDX
-    if(H == 0) {
-        ITargetClr[SECOND_0_LED_INDX] = Clr.ToRGB();
-//        Printf("H=%u; Indx=%u\r\r", H, Indx);
-    }
-#endif
+    ITargetClr[Indx] = Clr;
 }
-void SetTargetClrM(uint32_t M, ColorHSV_t Clr) {
+void SetTargetClrM(uint32_t M, Color_t Clr) {
     if(M >= MIRILLI_M_CNT) return;
     uint32_t Indx = M2LedN[M];
-    ITargetClr[Indx] = Clr.ToRGB();
+    ITargetClr[Indx] = Clr;
 }
 
 void WakeMirilli() {
@@ -77,11 +69,14 @@ void WakeMirilli() {
     chSysUnlock();
 }
 
-void ResetColors(ColorHSV_t ClrH, ColorHSV_t ClrM) {
-    ClrH.V = OFF_LUMINOCITY;
-    ClrM.V = OFF_LUMINOCITY;
+void ResetColorsToOffState(Color_t ClrH, Color_t ClrM) {
+    Color_t TargetClrH;
+    Color_t TargetClrM;
+    TargetClrH.SetRGBWBrightness(ClrH, OFF_LUMINOCITY);
+    TargetClrM.SetRGBWBrightness(ClrM, OFF_LUMINOCITY);
     for(int32_t i=0; i<12; i++) {
-        SetTargetClrH(i, ClrH);
-        SetTargetClrM(i, ClrM);
+        SetTargetClrH(i, TargetClrH);
+        SetTargetClrM(i, TargetClrM);
     }
+    SetTargetClrM(12, TargetClrM);  // Extra miril at 12
 }

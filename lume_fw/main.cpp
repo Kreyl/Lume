@@ -31,8 +31,8 @@ TmrKL_t TmrMenu {MS2ST(9999), evtIdMenuTimeout, tktOneShot};
 enum Btns_t {btnUp=0, btnDown=1, btnPlus=2, btnMinus=3};
 
 static Hypertime_t Hypertime;
-ColorHSV_t ClrH(144, 100, 100);
-ColorHSV_t ClrM(144, 100, 100);
+Color_t ClrH(0, 0, 255, 0);
+Color_t ClrM(0, 0, 0, 255);
 
 uint32_t CurrentLum = 0;
 
@@ -77,8 +77,8 @@ int main(void) {
         Settings.BrtHi = TOP_BRIGHTNESS;
         Settings.BrtLo = TOP_BRIGHTNESS;
     }
-    ClrH.H = Settings.ClrIdH;
-    ClrM.H = Settings.ClrIdM;
+//    ClrH.H = Settings.ClrIdH;
+//    ClrM.H = Settings.ClrIdM;
 
     Interface.Reset();
     EnterIdle();
@@ -136,34 +136,49 @@ void ITask() {
 void IndicateNewSecond() {
     Hypertime.ConvertFromTime();
 //    Printf("HyperH: %u; HyperM: %u\r", Hypertime.H, Hypertime.M);
-    ResetColors(ClrH, ClrM);
+    ResetColorsToOffState(ClrH, ClrM);
 
-    // Calculate brightness
+    // Calculate target colors
+    Color_t TargetClrH;
+    Color_t TargetClrM;
     if(CurrentLum > Settings.Threshold) {
-        ClrH.V = Settings.BrtHi;
-        ClrM.V = Settings.BrtHi;
+        TargetClrH.SetRGBWBrightness(ClrH, Settings.BrtHi);
+        TargetClrM.SetRGBWBrightness(ClrM, Settings.BrtHi);
     }
     else {
-        ClrH.V = Settings.BrtLo;
-        ClrM.V = Settings.BrtLo;
+        TargetClrH.SetRGBWBrightness(ClrH, Settings.BrtLo);
+        TargetClrM.SetRGBWBrightness(ClrM, Settings.BrtLo);
     }
 
     // ==== Process hours ====
-    SetTargetClrH(Hypertime.H, ClrH);
+    SetTargetClrH(Hypertime.H, TargetClrH);
 
     // ==== Process minutes ====
     if(Hypertime.M == 0) {
-        SetTargetClrM(0, ClrM);
-        SetTargetClrM(11, ClrM);
+        SetTargetClrM(0, TargetClrM);
+        SetTargetClrM(12, TargetClrM);
+    }
+    else if(Hypertime.M == 1) {
+        SetTargetClrM(0, TargetClrM);   // }
+        SetTargetClrM(12, TargetClrM);  // } Mirillu at 12
+        SetTargetClrM(1, TargetClrM);   // Miril at 1
+    }
+    else if(Hypertime.M == 2) {
+        SetTargetClrM(1, TargetClrM);   // Miril at 1
+    }
+    else if(Hypertime.M == 23) {
+        SetTargetClrM(11, TargetClrM);  // Miril at 11
+        SetTargetClrM(0, TargetClrM);   // }
+        SetTargetClrM(12, TargetClrM);  // } Mirillu at 12
     }
     else {
         uint32_t N = Hypertime.M / 2;
-        if(Hypertime.M & 1) { // Odd, single
-            SetTargetClrM(N, ClrM);
+        if(Hypertime.M & 1) { // Odd, couple
+            SetTargetClrM(N, TargetClrM);
+            SetTargetClrM(N+1, TargetClrM);
         }
-        else { // Even, couple
-            SetTargetClrM(N, ClrM);
-            SetTargetClrM(N-1, ClrM);
+        else { // Even, single
+            SetTargetClrM(N, TargetClrM);
         }
     }
     WakeMirilli();
@@ -332,7 +347,7 @@ void MenuHandler(Btns_t Btn) {
             break;
 #endif
 
-#if 1 // ==== Colors ====
+#if 0 // ==== Colors ====
         case stClrH:
             switch(Btn) {
                 case btnDown:
@@ -382,6 +397,7 @@ void MenuHandler(Btns_t Btn) {
             Interface.DisplayClrM();
             break;
 #endif
+            default: break;
     } // switch state
 }
 
@@ -401,7 +417,7 @@ void EnterIdle() {
     RTC->BKP3R = Settings.R3;
     // Save time if changed
     if(DateTimeHasChanged) {
-        ResetColors(ClrH, ClrM);
+        ResetColorsToOffState(ClrH, ClrM);
         Time.SetDateTime();
         IndicateNewSecond();
     }
