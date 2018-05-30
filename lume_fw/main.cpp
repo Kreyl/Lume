@@ -158,28 +158,8 @@ void IndicateNewSecond() {
         SetTargetClrM(0, TargetClrM);
         SetTargetClrM(12, TargetClrM);
     }
-    else if(Hypertime.M == 1) {
-        SetTargetClrM(0, TargetClrM);   // }
-        SetTargetClrM(12, TargetClrM);  // } Mirillu at 12
-        SetTargetClrM(1, TargetClrM);   // Miril at 1
-    }
-    else if(Hypertime.M == 2) {
-        SetTargetClrM(1, TargetClrM);   // Miril at 1
-    }
-    else if(Hypertime.M == 23) {
-        SetTargetClrM(11, TargetClrM);  // Miril at 11
-        SetTargetClrM(0, TargetClrM);   // }
-        SetTargetClrM(12, TargetClrM);  // } Mirillu at 12
-    }
     else {
-        uint32_t N = Hypertime.M / 2;
-        if(Hypertime.M & 1) { // Odd, couple
-            SetTargetClrM(N, TargetClrM);
-            SetTargetClrM(N+1, TargetClrM);
-        }
-        else { // Even, single
-            SetTargetClrM(N, TargetClrM);
-        }
+        SetTargetClrM(Hypertime.M, TargetClrM);
     }
     WakeMirilli();
 }
@@ -194,11 +174,19 @@ void Hypertime_t::ConvertFromTime() {
     }
     // Minutes
     int32_t S = Time.Curr.M * 60 + Time.Curr.S;
-    int32_t FMin = S / 150;    // 150s in one hyperminute (== 2.5 minutes)
+    int32_t FMin = (S + 150) / 300;    // 300s in one hyperminute (== 5 minutes)
+    if(FMin > 11) FMin = 0;
     if(M != FMin) {
         M = FMin;
         NewM = true;
     }
+
+//    int32_t S = Time.Curr.M * 60 + Time.Curr.S;
+//    int32_t FMin = S / 150;    // 150s in one hyperminute (== 2.5 minutes)
+//    if(M != FMin) {
+//        M = FMin;
+//        NewM = true;
+//    }
 }
 
 void MenuHandler(Btns_t Btn) {
