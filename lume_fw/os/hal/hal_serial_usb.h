@@ -1,5 +1,5 @@
 /*
-    ChibiOS - Copyright (C) 2006..2016 Giovanni Di Sirio
+    ChibiOS - Copyright (C) 2006..2018 Giovanni Di Sirio
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -175,7 +175,7 @@ extern "C" {
 #endif
   void sduInit(void);
   void sduObjectInit(SerialUSBDriver *sdup);
-  void sduStart(SerialUSBDriver *sdup, const SerialUSBConfig *config);
+  msg_t sduStart(SerialUSBDriver *sdup, const SerialUSBConfig *config);
   void sduStop(SerialUSBDriver *sdup);
   void sduSuspendHookI(SerialUSBDriver *sdup);
   void sduWakeupHookI(SerialUSBDriver *sdup);
@@ -185,6 +185,7 @@ extern "C" {
   void sduDataTransmitted(USBDriver *usbp, usbep_t ep);
   void sduDataReceived(USBDriver *usbp, usbep_t ep);
   void sduInterruptTransmitted(USBDriver *usbp, usbep_t ep);
+  msg_t sduControl(USBDriver *usbp, unsigned int operation, void *arg);
 #ifdef __cplusplus
 }
 #endif

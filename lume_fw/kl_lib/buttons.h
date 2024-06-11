@@ -5,7 +5,8 @@
  *      Author: kreyl
  */
 
-#pragma once
+#ifndef BUTTONS_H_
+#define BUTTONS_H_
 
 #include "hal.h"
 #include "kl_lib.h"
@@ -27,27 +28,24 @@
  */
 
 // ================================= Settings ==================================
-#define BUTTONS_CNT                 4
+#define BUTTONS_CNT                 3
 // Select required events etc.
-#define BTN_SHORTPRESS              TRUE   // beShortPress evt
-#define BTN_RELEASE                 FALSE
-#define BTN_LONGPRESS               FALSE   // Send LongPress evt
+#define BTN_SHORTPRESS              FALSE    // beShortPress evt
+#define BTN_RELEASE                 TRUE
+#define BTN_LONGPRESS               TRUE    // Send LongPress evt
 #define BTN_REPEAT                  TRUE   // Send Repeat evt
-#define BTN_COMBO                   FALSE   // Allow combo
-#define BTN_GETSTATE_REQUIRED       TRUE
+#define BTN_COMBO                   FALSE    // Allow combo
+#define BTN_LONG_COMBO              FALSE    // Allow longpress combo
+#define BTN_DOUBLE_CLICK            FALSE
+#define BTN_GETSTATE_REQUIRED       FALSE
 
-#define BTN_REPEAT_PERIOD_MS        54
+#define BTN_REPEAT_PERIOD_MS        117
 #define BTN_LONGPRESS_DELAY_MS      999
 #define BTN_DELAY_BEFORE_REPEAT_MS  450
-
-#if BTN_COMBO
-#define BTNS_EVT_Q_LEN              7   // Length of events' query
-#else
-#define BTNS_EVT_Q_LEN              1   // No need in queue if combo not allowed
-#endif
+#define BTN_DOUBLECLICK_DELAY_MS    500
 
 // Define correct button behavior depending on schematic
-#define BTN_IDLE_LOW                FALSE
+#define BTN_IDLE_LOW                TRUE
 // =============================================================================
 
 // Selected depending on Idle state
@@ -66,10 +64,10 @@
 
 // ==== Types ==== Do not touch
 // BtnEvent: contains info about event type, count of participating btns and array with btn IDs
-enum BtnEvt_t {beShortPress, beLongPress, beRelease, beCancel, beRepeat, beCombo};
+enum BtnEvt_t {beShortPress, beLongPress, beRelease, beRepeat, beCombo, beLongCombo, beDoubleClick};
 struct BtnEvtInfo_t {
     BtnEvt_t Type;
-#if BTN_COMBO
+#if BTN_COMBO || BTN_LONG_COMBO
     uint8_t BtnCnt;
     uint8_t BtnID[BUTTONS_CNT];
 #elif BUTTONS_CNT != 1
@@ -79,3 +77,5 @@ struct BtnEvtInfo_t {
 
 PinSnsState_t GetBtnState(uint8_t BtnID);
 #endif
+
+#endif // BUTTONS_H_
