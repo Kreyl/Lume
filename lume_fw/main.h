@@ -5,7 +5,8 @@
  *      Author: Kreyl
  */
 
-#pragma once
+#ifndef MAIN_H__
+#define MAIN_H__
 
 #include "kl_lib.h"
 
@@ -15,3 +16,5 @@
 };
 
 extern State_t State;*/
+
+#endif //MAIN_H__

@@ -5,13 +5,12 @@
  *      Author: Kreyl
  */
 
-#pragma once
-
-#include <inttypes.h>
+#ifndef BOARD_H__
+#define BOARD_H__
 
 // ==== General ====
 #define BOARD_NAME          "Lume3"
-#define APP_NAME            "Lume"
+#define APP_NAME            "Opressor"
 
 // MCU type as defined in the ST header.
 #define STM32F072xB     // no matter, 8 or B
@@ -23,7 +22,7 @@
 
 #define SIMPLESENSORS_ENABLED   TRUE
 #define BUTTONS_ENABLED         TRUE
-#define ADC_REQUIRED            TRUE
+#define ADC_REQUIRED            FALSE
 #define I2C1_ENABLED            FALSE
 #define I2C_USE_SEMAPHORE       FALSE
 
@@ -58,20 +57,15 @@
 // LEDs
 #define LEDWS_PIN       GPIOB, 15, omPushPull, pudNone, AF0, psHigh
 
+// USB
+#define USB_DETECT_PIN  GPIOA, 2
+#define USB_DM          GPIOA, 11
+#define USB_DP          GPIOA, 12
+
 #endif // GPIO
 
 #if 1 // =========================== SPI =======================================
 #define LEDWS_SPI       SPI2
-#endif
-
-#if 1 // ========================== USART ======================================
-#define PRINTF_FLOAT_EN FALSE
-#define CMD_UART        USART1
-#define UART_USE_INDEPENDENT_CLK    TRUE
-#define UART_TXBUF_SZ   1024
-
-// LCD USART
-#define LCD_UART_SPEED      100000
 #endif
 
 #if 1 // ========================== USB ========================================
@@ -107,13 +101,13 @@
 #if 1 // =========================== DMA =======================================
 #define STM32_DMA_REQUIRED  TRUE
 // ==== Uart ====
-#define UART_DMA_TX     STM32_DMA1_STREAM2
-#define UART_DMA_RX     STM32_DMA1_STREAM3
+#define UART_DMA_TX_MODE(Chnl) (STM32_DMA_CR_CHSEL(Chnl) | DMA_PRIORITY_LOW | STM32_DMA_CR_MSIZE_BYTE | STM32_DMA_CR_PSIZE_BYTE | STM32_DMA_CR_MINC | STM32_DMA_CR_DIR_M2P | STM32_DMA_CR_TCIE)
+#define UART_DMA_RX_MODE(Chnl) (STM32_DMA_CR_CHSEL(Chnl) | DMA_PRIORITY_MEDIUM | STM32_DMA_CR_MSIZE_BYTE | STM32_DMA_CR_PSIZE_BYTE | STM32_DMA_CR_MINC | STM32_DMA_CR_DIR_P2M | STM32_DMA_CR_CIRC)
+#define UART_DMA_TX     STM32_DMA_STREAM_ID(1, 2)
+#define UART_DMA_RX     STM32_DMA_STREAM_ID(1, 3)
 #define UART_DMA_CHNL   0   // Dummy
 
-#define LCD_DMA         STM32_DMA1_STREAM7  // USART3 TX
-
-#define LEDWS_DMA       STM32_DMA1_STREAM5  // SPI2 TX
+#define LCD_DMA         STM32_DMA_STREAM_ID(1, 7)  // USART3 TX
 
 // ==== I2C1 ====
 #define I2C1_DMA_TX     STM32_DMA1_STREAM2
@@ -132,3 +126,21 @@
 #endif // ADC
 
 #endif // DMA
+
+#if 1 // ========================== USART ======================================
+#define PRINTF_FLOAT_EN FALSE
+#define UART_TXBUF_SZ   1024
+#define UART_RXBUF_SZ   128
+#define CMD_BUF_SZ      128
+
+#define CMD_UART        USART1
+
+
+#define CMD_UART_PARAMS \
+    CMD_UART, UART_GPIO, UART_TX_PIN, UART_GPIO, UART_RX_PIN, \
+    UART_DMA_TX, UART_DMA_RX, UART_DMA_TX_MODE(UART_DMA_CHNL), UART_DMA_RX_MODE(UART_DMA_CHNL), \
+    uartclkHSI // independent clock
+
+#endif
+
+#endif //BOARD_H__

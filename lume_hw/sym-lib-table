@@ -1,3 +1,4 @@
 (sym_lib_table
-  (lib (name lume-rescue)(type Legacy)(uri ${KIPRJMOD}/lume-rescue.lib)(options "")(descr ""))
+  (version 0)
+  (lib (name "lume-rescue")(type "Legacy")(uri "${KIPRJMOD}/lume-rescue.lib")(options "")(descr ""))
 )

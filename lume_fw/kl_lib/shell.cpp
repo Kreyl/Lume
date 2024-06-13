@@ -70,6 +70,14 @@ char* PrintfToBuf(char* PBuf, const char *format, ...) {
     return PtB.S;
 }
 
+char* PrintfToBuf(char* PBuf, const char *format, va_list args) {
+    PrintToBuf_t PtB;
+    PtB.S = PBuf;
+    PtB.IVsPrintf(format, args);
+    *PtB.S = 0;
+    return PtB.S;
+}
+
 #if 0
 void ByteShell_t::Reply(uint8_t CmdCode, uint32_t Len, uint8_t *PData) {
 //    Printf("BSendCmd %X; %u; %A\r", CmdCode, Len, PData, Len, ' ');

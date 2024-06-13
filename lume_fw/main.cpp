@@ -17,10 +17,10 @@ CmdUart_t Uart{CmdUartParams};
 void OnCmd(Shell_t *PShell);
 void ITask();
 
-Interface_t Interface;
+//Interface_t Interface;
 #endif
 
-int main(void) {
+void main(void) {
     // ==== Init Clock system ====
     Clk.EnablePrefetch();
     Clk.UpdateFreqValues();
@@ -38,14 +38,17 @@ int main(void) {
     SimpleSensors::Init();
     chThdSleepMilliseconds(180); // Let power to stabilize
 
-//    PinSetupOut(LCD_PWR, omPushPull);
-//    PinSetHi(LCD_PWR);
-//    chThdSleepMilliseconds(18);
-//    Lcd.Init();
+    PinSetupOut(LCD_PWR, omPushPull);
+    PinSetHi(LCD_PWR);
+    chThdSleepMilliseconds(18);
+    Lcd.Init();
+    Lcd.Backlight(255);
 
     // Time and backup space
-//    BackupSpc::EnableAccess();
-//    Interface.Reset();
+    BackupSpc::EnableAccess();
+    Lcd.PrintfFont(Times_New_Roman18x16, 0, 0, "Aiya");
+
+    // Servo
 
     // Main cycle
     ITask();

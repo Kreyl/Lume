@@ -11,6 +11,9 @@
                             STM32_DMA_CR_DIR_M2P |    /* Direction is memory to peripheral */ \
                             STM32_DMA_CR_CIRC
 
+#define LCD_UART_SPEED      10000
+static const stm32_dma_stream_t *PDmaTx;
+
 Lcd_t Lcd;
 
 void Lcd_t::Init(void) {
@@ -76,19 +79,19 @@ void Lcd_t::Init(void) {
     USART3->CR3 = USART_CR3_DMAT;   // Enable DMA at transmitter
 #endif
     // DMA
-    dmaStreamAllocate     (LCD_DMA, IRQ_PRIO_LOW, nullptr, nullptr);
-    dmaStreamSetPeripheral(LCD_DMA, &USART3->TDR);
-    dmaStreamSetMemory0   (LCD_DMA, IBuf);
-    dmaStreamSetTransactionSize(LCD_DMA, LCD_VIDEOBUF_SIZE);
-    dmaStreamSetMode      (LCD_DMA, LCD_DMA_TX_MODE);
+    PDmaTx = dmaStreamAlloc(LCD_DMA, IRQ_PRIO_MEDIUM, nullptr, nullptr);
+    dmaStreamSetPeripheral(PDmaTx, &USART3->TDR);
+    dmaStreamSetMemory0   (PDmaTx, IBuf);
+    dmaStreamSetTransactionSize(PDmaTx, LCD_VIDEOBUF_SIZE);
+    dmaStreamSetMode      (PDmaTx, LCD_DMA_TX_MODE);
     // Start transmission
     XCS_Lo();
-    dmaStreamEnable(LCD_DMA);
+    dmaStreamEnable(PDmaTx);
     chSemObjectInit(&semLcd, 1);
 }
 
 void Lcd_t::Shutdown(void) {
-    dmaStreamDisable(LCD_DMA);
+    dmaStreamDisable(PDmaTx);
     XRES_Lo();
     XCS_Lo();
     SCLK_Lo();
@@ -129,7 +132,7 @@ uint8_t Lcd_t::IPutChar(char c) {
     return retvOk;
 }
 
-void Lcd_t::Printf(const uint8_t x, const uint8_t y, const char *S, ...) {
+void Lcd_t::Print(const uint8_t x, const uint8_t y, const char *S, ...) {
     IInverted = false;
     msg_t msg = chSemWait(&semLcd);
     if(msg == MSG_OK) {
@@ -142,7 +145,7 @@ void Lcd_t::Printf(const uint8_t x, const uint8_t y, const char *S, ...) {
     }
 }
 
-void Lcd_t::PrintfInverted(const uint8_t x, const uint8_t y, const char *S, ...) {
+void Lcd_t::PrintInverted(const uint8_t x, const uint8_t y, const char *S, ...) {
     IInverted = true;
     msg_t msg = chSemWait(&semLcd);
     if(msg == MSG_OK) {
@@ -203,15 +206,14 @@ struct {
     char Buf[FNT_CHAR_BUF_SZ];
     uint32_t Cnt;
 } FntBuf;
-static inline void FLcdPutFontChar(char c) { FntBuf.Buf[FntBuf.Cnt++] = c; }
 
 void Lcd_t::PrintfFont(const uint8_t *PFont, uint8_t x, uint8_t y, const char *S, ...) {
     // Print to buf
-    FntBuf.Cnt = 0;
     va_list args;
     va_start(args, S);
-    kl_vsprintf(FLcdPutFontChar, FNT_CHAR_BUF_SZ, S, args);
+    char *end = PrintfToBuf(FntBuf.Buf, S, args);
     va_end(args);
+    FntBuf.Cnt = end - FntBuf.Buf;
     // Display what printed
     uint32_t height = PFont[2], MaxWidth = PFont[1];
     uint8_t FirstSymbolCode = PFont[0];
