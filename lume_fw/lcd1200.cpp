@@ -11,20 +11,19 @@
                             STM32_DMA_CR_DIR_M2P |    /* Direction is memory to peripheral */ \
                             STM32_DMA_CR_CIRC
 
-#define LCD_UART_SPEED      10000
+#define LCD_UART_SPEED      100000
 static const stm32_dma_stream_t *PDmaTx;
 
 Lcd_t Lcd;
 
 void Lcd_t::Init(void) {
-    BckLt.Init();
     // ==== GPIOs ====
+    PinSetupOut(LCD_BCKLT, omPushPull);
     // Configure LCD_XRES, LCD_XCS, LCD_SCLK & LCD_SDA as Push-Pull output
     PinSetupOut(LCD_XRES, omPushPull);
     PinSetupOut(LCD_XCS,  omPushPull);
     PinSetupOut(LCD_SCLK, omPushPull);
     PinSetupOut(LCD_SDA,  omPushPull);
-    BckLt.Init();
     // ========================= Init LCD ======================================
     SCLK_Lo();
     XCS_Hi();
@@ -96,7 +95,7 @@ void Lcd_t::Shutdown(void) {
     XCS_Lo();
     SCLK_Lo();
     SDA_Lo();
-    Backlight(0);
+    BacklightOff();
     chSemReset(&semLcd, 1);
 }
 
@@ -211,7 +210,7 @@ void Lcd_t::PrintfFont(const uint8_t *PFont, uint8_t x, uint8_t y, const char *S
     // Print to buf
     va_list args;
     va_start(args, S);
-    char *end = PrintfToBuf(FntBuf.Buf, S, args);
+    char *end = PrintfToBufArgs(FntBuf.Buf, S, args);
     va_end(args);
     FntBuf.Cnt = end - FntBuf.Buf;
     // Display what printed

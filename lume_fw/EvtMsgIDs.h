@@ -21,6 +21,8 @@ enum EvtMsgId_t {
 
     evtIdRadioCmd,
 
+    evtIdMoveIt,
+
     // Usb
     evtIdUsbConnect,
     evtIdUsbDisconnect,

@@ -43,7 +43,7 @@
 #define LCD_XRES        GPIOB, 11
 #define LCD_SCLK        GPIOB, 12
 #define LCD_XCS         GPIOB, 13
-#define LCD_BCKLT       { GPIOB, 14, TIM15, 1, invNotInverted, omPushPull, 100 }
+#define LCD_BCKLT       GPIOB, 14
 #define LCD_PWR         GPIOA, 6
 
 // Battery measurement
@@ -61,6 +61,9 @@
 #define USB_DETECT_PIN  GPIOA, 2
 #define USB_DM          GPIOA, 11
 #define USB_DP          GPIOA, 12
+
+// Servo
+#define SERVO_PIN       GPIOB, 15, TIM15, 2
 
 #endif // GPIO
 

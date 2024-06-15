@@ -70,7 +70,7 @@ char* PrintfToBuf(char* PBuf, const char *format, ...) {
     return PtB.S;
 }
 
-char* PrintfToBuf(char* PBuf, const char *format, va_list args) {
+char* PrintfToBufArgs(char* PBuf, const char *format, va_list args) {
     PrintToBuf_t PtB;
     PtB.S = PBuf;
     PtB.IVsPrintf(format, args);

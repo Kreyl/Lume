@@ -49,7 +49,6 @@ enum Invert_t {NotInverted, Inverted};
 
 class Lcd_t: public PrintfHelper_t {
 private:
-    const PinOutputPWM_t BckLt{LCD_BCKLT};
     uint16_t IBuf[LCD_VIDEOBUF_SIZE];
     uint16_t CurrentPosition;   // x, y to place data to
     bool IInverted = false;
@@ -71,7 +70,8 @@ private:
 public:
     void Init();
     void Shutdown();
-    void Backlight(uint8_t ABrightness)  { BckLt.Set(ABrightness); }
+    void BacklightOn()  { PinSetHi(LCD_BCKLT); }
+    void BacklightOff() { PinSetLo(LCD_BCKLT); }
     // High-level
     void GotoCharXY(uint8_t x, uint8_t y) { CurrentPosition =  x*6 + y*96; }
     void DrawChar(uint8_t AChar, Invert_t AInvert);

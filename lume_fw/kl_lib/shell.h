@@ -431,6 +431,7 @@ void PrintfEOL();
 //void PrintfNow(const char *format, ...);
 
 char* PrintfToBuf(char* PBuf, const char *format, ...);
+char* PrintfToBufArgs(char* PBuf, const char *format, va_list args);
 
 extern "C" {
 void PrintfC(const char *format, ...);
