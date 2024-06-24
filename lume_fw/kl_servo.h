@@ -28,30 +28,31 @@
 
 class Servo_t : private PinOutputPWM_t {
 private:
-    const uint32_t imin_us, imax_us;
+    const uint32_t ktim_freq, kmin_us, kmax_us;
 public:
-    void Init() const {
+    void Init(uint32_t start_us = 0) const {
         PinOutputPWM_t::Init();
-        PinOutputPWM_t::SetFrequencyHz(50);
-        Set_us(imin_us);
+        PinOutputPWM_t::SetFrequencyHz(ktim_freq);
+        Set_us(start_us);
     }
     void Set_us(int32_t uS) const {
         PinOutputPWM_t::Set(uS);
     }
 
-    void SetAngle_dg(int32_t Angle) const {
-        uint32_t us = Proportion<int32_t>(0, 180, imin_us, imax_us, Angle);
-        Printf("%d %d\r", Angle, us);
+    void SetAngle_dg(int32_t angle) const {
+        uint32_t us = Proportion<int32_t>(0, 180, kmin_us, kmax_us, angle);
+        Printf("%d %d\r", angle, us);
         Set_us(us);
     }
 
     void Release() const { PinOutputPWM_t::Set(0); }
 
-    Servo_t(GPIO_TypeDef *PGpio, uint16_t Pin, TIM_TypeDef *PTimer, uint32_t TimerChnl,
-            uint32_t min_us = 544, uint32_t max_us = 2400) :
-                // Setup timer, making 1 tick = 1us
-                PinOutputPWM_t(PGpio, Pin, PTimer, TimerChnl, invNotInverted, omPushPull, 19999),
-                imin_us(min_us), imax_us(max_us) {}
+    Servo_t(GPIO_TypeDef *pgpio, uint16_t pin, TIM_TypeDef *ptimer, uint32_t timer_chnl,
+            const uint32_t timer_freq = 50,
+            const uint32_t min_us = 544, const uint32_t max_us = 2400) :
+                // Setup timer, making 1 tick = 1us. Timer input freq can always be made 1MHz
+                PinOutputPWM_t(pgpio, pin, ptimer, timer_chnl, invNotInverted, omPushPull, ((1000000UL / timer_freq) - 1UL)),
+                ktim_freq(timer_freq), kmin_us(min_us), kmax_us(max_us) { }
 };
 
 #endif // KL_SERVO_H__

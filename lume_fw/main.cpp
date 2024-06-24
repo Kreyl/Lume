@@ -16,20 +16,90 @@ static const UartParams_t CmdUartParams(115200, CMD_UART_PARAMS);
 CmdUart_t Uart{CmdUartParams};
 void OnCmd(Shell_t *PShell);
 void ITask();
-
-//Interface_t Interface;
-Servo_t srv{SERVO_PIN, 360, 2280};
-bool move_it = false;
-int32_t angle1 = 45, angle2 = 120, curr_angle;;
-TmrKL_t tmr_move(TIME_MS2I(999), evtIdMoveIt, tktPeriodic);
-
-uint32_t press_cnt;
 #endif
 
-void DisplayCnt() {
-    Lcd.PrintfFont(Times_New_Roman18x16, 0, 3, "%u    ", press_cnt);
-    Printf("Cnt: %u\r", press_cnt);
+#if 1 // ==== Non-volatile data ====
+static const uint32_t knv_data_sz = 5, kaddr_cnt = 0;
+union NVData {
+    uint32_t arr[knv_data_sz];
+    struct {
+        uint32_t cnt;
+        uint32_t up_pos_us, down_pos_us;
+        uint32_t up_period_ms, down_period_ms;
+    };
+    void Load() {
+        for(uint32_t i=0; i<knv_data_sz; i++) arr[i] = BackupSpc::ReadRegister(i);
+        if(up_period_ms == 0 or down_period_ms == 0) {
+            up_period_ms = 999;
+            down_period_ms = 270;
+        }
+    }
+    void Save() { for(uint32_t i=0; i<knv_data_sz; i++) BackupSpc::WriteRegister(i, arr[i]); }
+    void SaveCnt() { BackupSpc::WriteRegister(kaddr_cnt, cnt); }
+} nv_data;
+#endif
+
+#if 1 // ==== State machine ====
+TmrKL_t tmr_move(TIME_MS2I(999), evtIdMoveIt, tktOneShot);
+TmrKL_t tmr_show_act(TIME_MS2I(306), evtIdShowActivity, tktPeriodic);
+static bool move_it = false;
+#endif
+
+#if 1 // ==== Interface ====
+void DisplayAndSaveCnt() {
+    nv_data.SaveCnt();
+    Lcd.FillArea(0, 3, 96, 2, 0); // x, y, width, height, filler
+    Lcd.PrintfFont(Times_New_Roman18x16, 0, 3, "N=%u", nv_data.cnt);
+//    Printf("Cnt: %u\r", nv_data.cnt);
 }
+
+
+const uint32_t kblinker_x = 0, kblinker_y = 1;
+void DisplayStartOrStop() {
+    Lcd.Print(0, 0, move_it? "Stop ": "Start");
+    if(!move_it) Lcd.Print(kblinker_x, kblinker_y, "     ");
+}
+
+void DisplayActivity() {
+    static uint32_t sta = 0;
+    switch(sta) {
+        case 0: Lcd.Print(kblinker_x, kblinker_y, ".    "); break;
+        case 1: Lcd.Print(kblinker_x, kblinker_y, "..   "); break;
+        case 2: Lcd.Print(kblinker_x, kblinker_y, "...  "); break;
+        case 3: Lcd.Print(kblinker_x, kblinker_y, ".... "); break;
+        case 4: Lcd.Print(kblinker_x, kblinker_y, "....."); break;
+        default: break;
+    }
+    sta++;
+    if(sta > 4) sta = 0;
+}
+
+void DisplayShowSettings() {
+    const uint32_t kx = 7;
+    Lcd.Print(kx, 0, "tUp:%u",   nv_data.up_period_ms);
+    Lcd.Print(kx, 1, "tDown:%u", nv_data.down_period_ms);
+    Lcd.Print(kx, 6, "aUp:%u",   nv_data.up_pos_us);
+    Lcd.Print(kx, 7, "aDown:%u", nv_data.down_pos_us);
+}
+#endif
+
+static class PressSrv : private Servo_t {
+public:
+    enum class Position {Up, Down} curr_pos = Position::Up;
+    PressSrv() : Servo_t(SERVO_PIN, 333, 760, 2280) {}
+    void Init() { Servo_t::Init(0); }
+    void Set_us(uint32_t us) { Servo_t::Set_us(us); }
+    void MoveUp() {
+        Set_us(nv_data.up_pos_us);
+        curr_pos = Position::Up;
+    }
+    void MoveDown() {
+        Set_us(nv_data.down_pos_us);
+        curr_pos = Position::Down;
+    }
+} srv;
+
+
 
 void main(void) {
     // ==== Init Clock system ====
@@ -56,16 +126,15 @@ void main(void) {
     Lcd.Init();
     Lcd.BacklightOn();
 
-    // Time and backup space
-    BackupSpc::EnableAccess();
-    press_cnt = BackupSpc::ReadRegister(0);
-    DisplayCnt();
-    Lcd.Print(0, 0, "Start");
+    BackupSpc::EnableAccess(); // Time and backup space
+    nv_data.Load();
+    DisplayShowSettings();
+    DisplayAndSaveCnt();
+    DisplayStartOrStop();
     Lcd.Print(0, 7, "Reset");
 
-    // Servo
-    srv.Init();
-    tmr_move.StartOrRestart();
+    srv.Init();  // Servo
+    srv.MoveUp();
 
     // Main cycle
     ITask();
@@ -81,29 +150,45 @@ void ITask() {
                 break;
 
             case evtIdButtons:
-                Printf("Btn %u %u\r", Msg.BtnEvtInfo.BtnID, Msg.BtnEvtInfo.Type);
+//                Printf("Btn %u %u\r", Msg.BtnEvtInfo.BtnID, Msg.BtnEvtInfo.Type);
                 switch(Msg.BtnEvtInfo.BtnID) {
                     case 0:
+                        srv.MoveUp(); // Always
                         move_it = !move_it;
-                        Lcd.Print(0, 0, move_it? "Stop ": "Start");
+                        DisplayStartOrStop();
+                        if(move_it) {
+                            tmr_move.StartOrRestart(TIME_MS2I(nv_data.up_period_ms));
+                            tmr_show_act.StartOrRestart();
+                        }
+                        else {
+                            tmr_move.Stop();
+                            tmr_show_act.Stop();
+                        }
                         break;
                     case 1:
-                        press_cnt = 0;
-                        BackupSpc::WriteRegister(0, press_cnt);
-                        DisplayCnt();
+                        nv_data.cnt = 0;
+                        DisplayAndSaveCnt();
                         break;
-//                    case 2: e.super.sig = BTN_PLUS_SIG; break;
-//                    case 3: e.super.sig = BTN_MINUS_SIG; break;
                     default: break;
                 }
                 break;
 
             case evtIdMoveIt:
                 if(move_it) {
-                    curr_angle = (curr_angle == angle1)? angle2 : angle1;
-                    srv.SetAngle_dg(curr_angle);
+                    if(srv.curr_pos == srv.Position::Up) {
+                        srv.MoveDown();
+                        tmr_move.StartOrRestart(TIME_MS2I(nv_data.down_period_ms));
+                        nv_data.cnt++;
+                        DisplayAndSaveCnt();
+                    }
+                    else { // Down position
+                        srv.MoveUp();
+                        tmr_move.StartOrRestart(TIME_MS2I(nv_data.up_period_ms));
+                    }
                 }
                 break;
+
+            case evtIdShowActivity: DisplayActivity(); break;
         } // switch
     }
 }
@@ -117,14 +202,6 @@ void OnCmd(Shell_t *PShell) {
     else if(PCmd->NameIs("Version")) PShell->Print("Version: %S %S\r", APP_NAME, XSTRINGIFY(BUILD_TIME));
     else if(PCmd->NameIs("mem")) PrintMemoryInfo();
 
-    else if(PCmd->NameIs("Set")) {
-        int32_t v;
-        if(PCmd->GetNext(&v) == retvOk) {
-            srv.SetAngle_dg(v);
-            PShell->Ok();
-        }
-        else PShell->BadParam();
-    }
     else if(PCmd->NameIs("Setus")) {
         int32_t v;
         if(PCmd->GetNext(&v) == retvOk) {
@@ -135,14 +212,26 @@ void OnCmd(Shell_t *PShell) {
     }
 
     else if(PCmd->NameIs("MoveIt")) {
-        int32_t a1, a2;
-        if(PCmd->GetParams<int32_t>(2, &angle1, &angle2) == retvOk) {
+        tmr_move.Stop();
+        srv.MoveUp();
+        if(PCmd->GetParams<uint32_t>(3,
+                &nv_data.up_pos_us, &nv_data.down_pos_us,
+                &nv_data.up_period_ms, nv_data.down_period_ms) == retvOk) {
+            nv_data.Save();
+            DisplayShowSettings();
+            tmr_move.StartOrRestart(TIME_MS2I(nv_data.up_period_ms));
             move_it = true;
+            DisplayStartOrStop();
             PShell->Ok();
         }
+        else PShell->BadParam();
     }
     else if(PCmd->NameIs("Stop")) {
         move_it = false;
+        tmr_move.Stop();
+        tmr_show_act.Stop();
+        srv.MoveUp();
+        DisplayStartOrStop();
         PShell->Ok();
     }
 

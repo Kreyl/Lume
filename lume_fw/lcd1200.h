@@ -81,6 +81,7 @@ public:
     void PrintfFont(const uint8_t *PFont, uint8_t x, uint8_t y, const char *S, ...);
 #endif
     void Cls();
+    void FillArea(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t filler = 0);
     void DrawImage(const uint8_t x, const uint8_t y, const uint8_t *Img);
     // Symbols printing
     void Symbols(const uint8_t x, const uint8_t y, ...);

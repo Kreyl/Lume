@@ -235,5 +235,14 @@ void Lcd_t::PrintfFont(const uint8_t *PFont, uint8_t x, uint8_t y, const char *S
         x += width;
     }
 }
+
+void Lcd_t::FillArea(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t filler) {
+    for(uint8_t h=0; h<height; h++) {
+        for(uint8_t w=0; w<width; w++) {
+            uint32_t Indx = x + w + (y + h) * 96;
+            IBuf[Indx] = static_cast<uint16_t>(filler) | 0x0001;
+        }
+    }
+}
 #endif
 
