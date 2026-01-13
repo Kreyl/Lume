@@ -75,11 +75,15 @@ void DisplayActivity() {
 }
 
 void DisplayShowSettings() {
-    const uint32_t kx = 7;
-    Lcd.Print(kx, 0, "tUp:%u",   nv_data.up_period_ms);
-    Lcd.Print(kx, 1, "tDown:%u", nv_data.down_period_ms);
-    Lcd.Print(kx, 6, "aUp:%u",   nv_data.up_pos_us);
-    Lcd.Print(kx, 7, "aDown:%u", nv_data.down_pos_us);
+    const uint32_t kx = 6;
+    // Clean it up
+    Lcd.FillArea(kx*6, 0, 96 - kx*6, 2, 0); // x, y, width, height, filler
+    Lcd.FillArea(kx*6, 6, 96 - kx*6, 2, 0); // x, y, width, height, filler
+    // Print
+    Lcd.Print(kx, 0, "msU:%u",   nv_data.up_period_ms);
+    Lcd.Print(kx, 1, "msD:%u", nv_data.down_period_ms);
+    Lcd.Print(kx, 6, "usUp:%u",   nv_data.up_pos_us);
+    Lcd.Print(kx, 7, "usDown:%u", nv_data.down_pos_us);
 }
 #endif
 
@@ -214,9 +218,11 @@ void OnCmd(Shell_t *PShell) {
     else if(PCmd->NameIs("MoveIt")) {
         tmr_move.Stop();
         srv.MoveUp();
-        if(PCmd->GetParams<uint32_t>(3,
-                &nv_data.up_pos_us, &nv_data.down_pos_us,
-                &nv_data.up_period_ms, nv_data.down_period_ms) == retvOk) {
+        if(PCmd->GetNext<uint32_t>(&nv_data.up_pos_us) == retvOk and
+           PCmd->GetNext<uint32_t>(&nv_data.down_pos_us) == retvOk and
+           PCmd->GetNext<uint32_t>(&nv_data.up_period_ms) == retvOk and
+           PCmd->GetNext<uint32_t>(&nv_data.down_period_ms) == retvOk
+        ) {
             nv_data.Save();
             DisplayShowSettings();
             tmr_move.StartOrRestart(TIME_MS2I(nv_data.up_period_ms));
